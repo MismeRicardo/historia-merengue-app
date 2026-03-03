@@ -1,0 +1,57 @@
+{
+  "nombre": "Estadio Monumental de la UNSA",
+  "nombreCompleto": "Estadio Monumental Victor Bengtsson",
+  "apodo": "El Estadio Más Grande del Perú",
+  "inauguracion": "2000-08-05",
+  "capacidad": 80093,
+  "ubicacion": {
+    "distrito": "Ate Vitarte",
+    "ciudad": "Lima",
+    "pais": "Perú",
+    "coordenadas": {
+      "latitud": -12.0464,
+      "longitud": -76.9628
+    }
+  },
+  "dimensiones": {
+    "largo": 105,
+    "ancho": 68,
+    "unidad": "metros"
+  },
+  "caracteristicas": [
+    "Estadio más grande del Perú",
+    "Capacidad para 80,093 espectadores",
+    "Cancha de césped natural",
+    "Gradas techadas",
+    "Palco VIP y plateas exclusivas",
+    "Zona de entrenamiento adyacente",
+    "Museo del club en las instalaciones"
+  ],
+  "eventosHistoricos": [
+    {
+      "anio": 2000,
+      "evento": "Inauguración oficial del estadio",
+      "descripcion": "Primer partido oficial con victoria de la 'U'"
+    },
+    {
+      "anio": 2004,
+      "evento": "Copa América 2004",
+      "descripcion": "Sede de varios partidos del torneo continental"
+    },
+    {
+      "anio": 2019,
+      "evento": "Copa Libertadores",
+      "descripcion": "Sede de partidos de fase de grupos de Copa Libertadores"
+    },
+    {
+      "anio": 2024,
+      "evento": "Centenario del club",
+      "descripcion": "Gran celebración por los 100 años de historia crema"
+    }
+  ],
+  "record_asistencia": {
+    "cantidad": 79959,
+    "partido": "Universitario vs Alianza Lima",
+    "fecha": "2023-11-05"
+  }
+}

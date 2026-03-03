@@ -1,0 +1,65 @@
+[
+  {
+    "id": 1,
+    "anio": 1924,
+    "titulo": "Fundación del Club",
+    "descripcion": "El 7 de agosto de 1924, estudiantes de la Universidad Mayor de San Marcos fundaron el Club Universitario de Deportes en Lima, Perú.",
+    "icono": "star"
+  },
+  {
+    "id": 2,
+    "anio": 1929,
+    "titulo": "Primer Campeonato Nacional",
+    "descripcion": "La 'U' conquista su primer título en el campeonato peruano, iniciando una era dorada para el club crema.",
+    "icono": "trophy"
+  },
+  {
+    "id": 3,
+    "anio": 1941,
+    "titulo": "Era de los Ídolos Históricos",
+    "descripcion": "Universitario consolida su dominio en el fútbol peruano con grandes figuras que marcan la historia del club.",
+    "icono": "people"
+  },
+  {
+    "id": 4,
+    "anio": 1966,
+    "titulo": "Primera Copa Libertadores",
+    "descripcion": "El club logra su mejor actuación histórica en la Copa Libertadores, llegando a semifinales del torneo continental.",
+    "icono": "stadium"
+  },
+  {
+    "id": 5,
+    "anio": 1971,
+    "titulo": "Bicampeón Nacional",
+    "descripcion": "Universitario logra el bicampeonato consecutivo ratificando su hegemonía en el fútbol peruano.",
+    "icono": "trophy"
+  },
+  {
+    "id": 6,
+    "anio": 2000,
+    "titulo": "Inauguración del Estadio Monumental",
+    "descripcion": "Se inaugura el Estadio Monumental 'U', el más grande del Perú con capacidad para más de 80,000 espectadores en Ate Vitarte.",
+    "icono": "stadium"
+  },
+  {
+    "id": 7,
+    "anio": 2009,
+    "titulo": "Tri-campeonato Histórico",
+    "descripcion": "Bajo la dirección técnica de Roberto Chale, la 'U' consigue tres títulos consecutivos (2008, 2009, 2011) en un período extraordinario.",
+    "icono": "trophy"
+  },
+  {
+    "id": 8,
+    "anio": 2013,
+    "titulo": "100 años de Historia",
+    "descripcion": "La institución celebra su centenario siendo el club con más títulos nacionales del Perú, símbolo de la identidad deportiva nacional.",
+    "icono": "star"
+  },
+  {
+    "id": 9,
+    "anio": 2024,
+    "titulo": "100 Años del Club",
+    "descripcion": "Universitario de Deportes celebra su centenario histórico siendo el club más exitoso del fútbol peruano con 27 títulos nacionales.",
+    "icono": "star"
+  }
+]

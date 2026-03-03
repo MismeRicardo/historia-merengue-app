@@ -1,0 +1,59 @@
+{
+  "nacional": [
+    { "anio": 1929, "competicion": "Campeonato Descentralizado" },
+    { "anio": 1931, "competicion": "Campeonato Descentralizado" },
+    { "anio": 1934, "competicion": "Campeonato Descentralizado" },
+    { "anio": 1939, "competicion": "Campeonato Descentralizado" },
+    { "anio": 1949, "competicion": "Campeonato Descentralizado" },
+    { "anio": 1950, "competicion": "Campeonato Descentralizado" },
+    { "anio": 1952, "competicion": "Campeonato Descentralizado" },
+    { "anio": 1954, "competicion": "Campeonato Descentralizado" },
+    { "anio": 1955, "competicion": "Campeonato Descentralizado" },
+    { "anio": 1956, "competicion": "Campeonato Descentralizado" },
+    { "anio": 1959, "competicion": "Campeonato Descentralizado" },
+    { "anio": 1960, "competicion": "Campeonato Descentralizado" },
+    { "anio": 1961, "competicion": "Campeonato Descentralizado" },
+    { "anio": 1962, "competicion": "Campeonato Descentralizado" },
+    { "anio": 1964, "competicion": "Campeonato Descentralizado" },
+    { "anio": 1965, "competicion": "Campeonato Descentralizado" },
+    { "anio": 1966, "competicion": "Campeonato Descentralizado" },
+    { "anio": 1967, "competicion": "Campeonato Descentralizado" },
+    { "anio": 1969, "competicion": "Campeonato Descentralizado" },
+    { "anio": 1971, "competicion": "Campeonato Descentralizado" },
+    { "anio": 1974, "competicion": "Campeonato Descentralizado" },
+    { "anio": 1982, "competicion": "Campeonato Descentralizado" },
+    { "anio": 1983, "competicion": "Campeonato Descentralizado" },
+    { "anio": 1985, "competicion": "Campeonato Descentralizado" },
+    { "anio": 1992, "competicion": "Campeonato Descentralizado" },
+    { "anio": 1993, "competicion": "Campeonato Descentralizado" },
+    { "anio": 2000, "competicion": "Campeonato Descentralizado" },
+    { "anio": 2009, "competicion": "Descentralizado / Apertura / Clausura" },
+    { "anio": 2011, "competicion": "Campeonato Descentralizado" },
+    { "anio": 2013, "competicion": "Campeonato Descentralizado" }
+  ],
+  "internacional": [
+    {
+      "anio": 1966,
+      "competicion": "Copa Libertadores",
+      "ronda": "Semifinales",
+      "descripcion": "Mejor actuación histórica en Copa Libertadores"
+    },
+    {
+      "anio": 1972,
+      "competicion": "Copa Libertadores",
+      "ronda": "Cuartos de Final",
+      "descripcion": "Destacada participación continental"
+    },
+    {
+      "anio": 1998,
+      "competicion": "Copa Conmebol",
+      "ronda": "Subcampeón",
+      "descripcion": "Llega a la final del torneo sudamericano"
+    }
+  ],
+  "resumen": {
+    "totalNacionales": 30,
+    "copasLibertadores": 0,
+    "fundacion": 1924
+  }
+}
