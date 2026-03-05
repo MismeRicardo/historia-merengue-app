@@ -3,67 +3,49 @@
  * Identidad: Rojo, Crema, Negro
  */
 
-import { Platform } from "react-native";
-
 // Paleta del Club Universitario
 export const Universitario = {
-  rojo: "#C8102E",
-  rojoOscuro: "#9B0C22",
-  crema: "#F5F0E8",
-  cremaOscuro: "#E8E0D0",
-  negro: "#1A1A1A",
-  grisOscuro: "#2C2C2C",
+  rojo: "#A6192E",
+  rojoOscuro: "#7E1325",
+  crema: "#FEFCEB",
+  cremaOscuro: "#F2F0E0",
+  negro: "#000000",
+  grisOscuro: "#1C1C1C",
   grisMedio: "#666666",
-  grisClaro: "#F2F2F2",
+  grisClaro: "#F5F5F5",
   blanco: "#FFFFFF",
   dorado: "#C9A84C",
 };
 
 export const Colors = {
   light: {
-    text: "#1A1A1A",
-    background: "#F5F0E8",
-    tint: "#C8102E",
-    icon: "#666666",
+    text: "#000000",
+    background: "#FFFEF4",
+    tint: "#A6192E",
+    icon: "#555555",
     tabIconDefault: "#999999",
-    tabIconSelected: "#C8102E",
+    tabIconSelected: "#A6192E",
     card: "#FFFFFF",
-    border: "#E8E0D0",
+    border: "#F2F0E0",
   },
   dark: {
-    text: "#F5F0E8",
-    background: "#1A1A1A",
-    tint: "#C8102E",
-    icon: "#AAAAAA",
-    tabIconDefault: "#666666",
-    tabIconSelected: "#C8102E",
-    card: "#2C2C2C",
-    border: "#3A3A3A",
+    text: "#000000",
+    background: "#FFFEF4",
+    tint: "#A6192E",
+    icon: "#555555",
+    tabIconDefault: "#999999",
+    tabIconSelected: "#A6192E",
+    card: "#FFFFFF",
+    border: "#F2F0E0",
   },
 };
 
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: "system-ui",
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: "ui-serif",
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: "ui-rounded",
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: "ui-monospace",
-  },
-  default: {
-    sans: "normal",
-    serif: "serif",
-    rounded: "normal",
-    mono: "monospace",
-  },
-  web: {
-    sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    serif: "Georgia, 'Times New Roman', serif",
-    rounded:
-      "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
-    mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-  },
-});
+// Tipografía Montserrat (similar a Gotham)
+export const Fonts = {
+  regular: 'Montserrat_400Regular',
+  medium: 'Montserrat_500Medium',
+  semiBold: 'Montserrat_600SemiBold',
+  bold: 'Montserrat_700Bold',
+  extraBold: 'Montserrat_800ExtraBold',
+  black: 'Montserrat_900Black',
+};

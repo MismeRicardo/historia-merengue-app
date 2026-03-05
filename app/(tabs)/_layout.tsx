@@ -3,8 +3,9 @@ import React from 'react';
 import { StyleSheet } from 'react-native';
 
 import { HapticTab } from '@/components/haptic-tab';
+import { MasTabButton } from '@/components/mas-tab-button';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
+import { Colors, Fonts } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function TabLayout() {
@@ -17,29 +18,23 @@ export default function TabLayout() {
         tabBarActiveTintColor: colors.tint,
         tabBarInactiveTintColor: colors.tabIconDefault,
         tabBarStyle: {
-          backgroundColor: colorScheme === 'dark' ? '#1A1A1A' : '#FFFFFF',
+          backgroundColor: colors.card,
           borderTopColor: colors.border,
           paddingBottom: 4,
         },
         tabBarLabelStyle: {
           fontSize: 10,
-          fontWeight: '600',
+          fontFamily: Fonts.semiBold,
         },
         headerShown: false,
         tabBarButton: HapticTab,
       }}>
+      {/* Tabs visibles */}
       <Tabs.Screen
         name="index"
         options={{
           title: 'Inicio',
           tabBarIcon: ({ color }) => <IconSymbol size={26} name="house.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="historia"
-        options={{
-          title: 'Historia',
-          tabBarIcon: ({ color }) => <IconSymbol size={26} name="clock.fill" color={color} />,
         }}
       />
       <Tabs.Screen
@@ -50,17 +45,38 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="plantel"
-        options={{
-          title: 'Plantel',
-          tabBarIcon: ({ color }) => <IconSymbol size={26} name="person.3.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
         name="estadio"
         options={{
           title: 'Estadio',
           tabBarIcon: ({ color }) => <IconSymbol size={26} name="mappin.and.ellipse" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="mas"
+        options={{
+          title: 'Más',
+          tabBarIcon: ({ color }) => <IconSymbol size={26} name="line.3.horizontal" color={color} />,
+          tabBarButton: (props) => <MasTabButton {...props} />,
+        }}
+      />
+
+      {/* Tabs ocultos — accesibles solo desde el menú "Más" */}
+      <Tabs.Screen
+        name="historia"
+        options={{
+          tabBarItemStyle: { display: 'none' },
+        }}
+      />
+      <Tabs.Screen
+        name="plantel"
+        options={{
+          tabBarItemStyle: { display: 'none' },
+        }}
+      />
+      <Tabs.Screen
+        name="goleadores"
+        options={{
+          tabBarItemStyle: { display: 'none' },
         }}
       />
     </Tabs>

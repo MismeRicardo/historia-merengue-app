@@ -1,4 +1,4 @@
-import { Colors, Universitario } from '@/constants/theme';
+import { Colors, Fonts, Universitario } from '@/constants/theme';
 import historiaData from '@/data/historia.json';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -6,7 +6,6 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 export default function HistoriaScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const isDark = colorScheme === 'dark';
 
   return (
     <ScrollView
@@ -27,12 +26,12 @@ export default function HistoriaScreen() {
             <View key={evento.id} style={styles.eventoRow}>
               {/* Línea vertical + círculo */}
               <View style={styles.lineaColumna}>
-                <View style={[styles.circulo, { backgroundColor: Universitario.rojo, borderColor: isDark ? Universitario.grisOscuro : Universitario.crema }]} />
+                <View style={[styles.circulo, { backgroundColor: Universitario.rojo, borderColor: Universitario.crema }]} />
                 {!esUltimo && <View style={[styles.linea, { backgroundColor: Universitario.rojoOscuro }]} />}
               </View>
 
               {/* Contenido del evento */}
-              <View style={[styles.tarjeta, { backgroundColor: isDark ? Universitario.grisOscuro : Universitario.blanco }]}>
+              <View style={[styles.tarjeta, { backgroundColor: Universitario.blanco }]}>
                 <View style={styles.tarjetaHeader}>
                   <View style={[styles.anioBadge, { backgroundColor: Universitario.rojo }]}>
                     <Text style={styles.anioText}>{evento.anio}</Text>
@@ -59,12 +58,13 @@ const styles = StyleSheet.create({
   },
   headerTitulo: {
     fontSize: 28,
-    fontWeight: '800',
+    fontFamily: Fonts.black,
     color: Universitario.crema,
     marginBottom: 4,
   },
   headerSubtitulo: {
     fontSize: 14,
+    fontFamily: Fonts.medium,
     color: Universitario.cremaOscuro,
     opacity: 0.9,
   },
@@ -116,16 +116,17 @@ const styles = StyleSheet.create({
   },
   anioText: {
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
     color: Universitario.crema,
   },
   eventoTitulo: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
     marginBottom: 6,
   },
   eventoDesc: {
     fontSize: 13,
+    fontFamily: Fonts.regular,
     lineHeight: 19,
   },
 });

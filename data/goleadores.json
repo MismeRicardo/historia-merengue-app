@@ -1,0 +1,90 @@
+[
+  {
+    "id": 1,
+    "nombre": "Lolo Fernández",
+    "nombreCompleto": "Teodoro Fernández Meléndez",
+    "goles": 214,
+    "temporadas": "1932–1951",
+    "partidos": 302,
+    "nacionalidad": "Perú",
+    "apodo": "El Cañonero",
+    "activo": false
+  },
+  {
+    "id": 2,
+    "nombre": "Roberto Chale",
+    "nombreCompleto": "Roberto Chale Herrera",
+    "goles": 148,
+    "temporadas": "1958–1973",
+    "partidos": 256,
+    "nacionalidad": "Perú",
+    "apodo": "El Maestro",
+    "activo": false
+  },
+  {
+    "id": 3,
+    "nombre": "Germán Leguía",
+    "nombreCompleto": "Germán Orlando Leguía Pajuelo",
+    "goles": 122,
+    "temporadas": "1965–1979",
+    "partidos": 198,
+    "nacionalidad": "Perú",
+    "apodo": null,
+    "activo": false
+  },
+  {
+    "id": 4,
+    "nombre": "José Velásquez",
+    "nombreCompleto": "José Guillermo Velásquez Fernández",
+    "goles": 97,
+    "temporadas": "1972–1985",
+    "partidos": 210,
+    "nacionalidad": "Perú",
+    "apodo": "Patrullero 39",
+    "activo": false
+  },
+  {
+    "id": 5,
+    "nombre": "Clemente Grau",
+    "nombreCompleto": "Clemente Grau",
+    "goles": 84,
+    "temporadas": "1924–1934",
+    "partidos": 130,
+    "nacionalidad": "Perú",
+    "apodo": null,
+    "activo": false
+  },
+  {
+    "id": 6,
+    "nombre": "Óscar Ibáñez",
+    "nombreCompleto": "Óscar Ibáñez Galecio",
+    "goles": 76,
+    "temporadas": "1959–1969",
+    "partidos": 142,
+    "nacionalidad": "Perú",
+    "apodo": null,
+    "activo": false
+  },
+  {
+    "id": 7,
+    "nombre": "Álex Valera",
+    "nombreCompleto": "Álexander Valera Fernández",
+    "goles": 52,
+    "temporadas": "2018–presente",
+    "partidos": 148,
+    "nacionalidad": "Perú",
+    "apodo": null,
+    "activo": true
+  },
+  {
+    "id": 8,
+    "nombre": "Hernán Barcos",
+    "nombreCompleto": "Hernán Rodrigo Barcos",
+    "goles": 48,
+    "temporadas": "2021–presente",
+    "partidos": 112,
+    "nacionalidad": "Argentina",
+    "apodo": "El Pirata",
+    "activo": true
+  }
+]
