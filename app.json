@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "historia-merengue-app",
+    "name": "Historia Merengue",
     "slug": "historia-merengue-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -12,6 +12,8 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.historiamerengue.app",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -44,6 +46,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "ac2b641a-34ee-4ce7-a79f-dc4b23c108d2"
+      }
     }
   }
 }
