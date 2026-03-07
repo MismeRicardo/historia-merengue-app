@@ -1,0 +1,85 @@
+[
+  {
+    "id": 1,
+    "nombre": "Ángel Fernández",
+    "nacionalidad": "España",
+    "periodos": [{ "desde": 1928, "hasta": 1930 }],
+    "titulos": ["Liga 1929"],
+    "partidos": 48,
+    "descripcion": "Primer entrenador de la historia del club. Sentó las bases del estilo de juego universitario.",
+    "activo": false
+  },
+  {
+    "id": 2,
+    "nombre": "Jack Greenwell",
+    "nacionalidad": "Inglaterra",
+    "periodos": [{ "desde": 1936, "hasta": 1945 }],
+    "titulos": ["Liga 1939", "Liga 1941", "Liga 1945"],
+    "partidos": 210,
+    "descripcion": "Máximo ganador de la historia del club. Revolucionó el fútbol peruano con su metodología europea.",
+    "activo": false
+  },
+  {
+    "id": 3,
+    "nombre": "Marcos Calderón",
+    "nacionalidad": "Perú",
+    "periodos": [{ "desde": 1974, "hasta": 1982 }],
+    "titulos": ["Liga 1974", "Liga 1975", "Copa Libertadores 1972"],
+    "partidos": 320,
+    "descripcion": "Leyenda como jugador y técnico. Llevó al club a su máximo esplendor continental.",
+    "activo": false
+  },
+  {
+    "id": 4,
+    "nombre": "Roberto Chale",
+    "nacionalidad": "Perú",
+    "periodos": [
+      { "desde": 2012, "hasta": 2014 },
+      { "desde": 2018, "hasta": 2019 }
+    ],
+    "titulos": ["Liga 2013"],
+    "partidos": 180,
+    "descripcion": "Ídolo crema que ganó el campeonato de 2013. Conocido por sacar el máximo rendimiento de jugadores locales.",
+    "activo": false
+  },
+  {
+    "id": 5,
+    "nombre": "Gregorio Pérez",
+    "nacionalidad": "Uruguay",
+    "periodos": [{ "desde": 2019, "hasta": 2021 }],
+    "titulos": ["Liga 2020"],
+    "partidos": 95,
+    "descripcion": "Dirigió al club en la temporada del título 2020 disputado en burbuja durante la pandemia.",
+    "activo": false
+  },
+  {
+    "id": 6,
+    "nombre": "Jorge Fossati",
+    "nacionalidad": "Uruguay",
+    "periodos": [{ "desde": 2022, "hasta": 2023 }],
+    "titulos": [],
+    "partidos": 72,
+    "descripcion": "Con amplia experiencia en el fútbol sudamericano, llevó al equipo a instancias decisivas de la Libertadores.",
+    "activo": false
+  },
+  {
+    "id": 7,
+    "nombre": "Fabián Bustos",
+    "nacionalidad": "Argentina",
+    "periodos": [{ "desde": 2024, "hasta": 2025 }],
+    "titulos": ["Liga 2024"],
+    "partidos": 84,
+    "descripcion": "Ganó el campeonato 2024 con un fútbol ofensivo y de alta presión. Renovó la plantilla con jugadores jóvenes.",
+    "activo": false
+  },
+  {
+    "id": 8,
+    "nombre": "Edilson Rúa",
+    "nacionalidad": "Colombia",
+    "periodos": [{ "desde": 2026, "hasta": null }],
+    "titulos": [],
+    "partidos": 12,
+    "descripcion": "Actual director técnico del club. Apuesta por un esquema de presión alta y juego combinativo.",
+    "activo": true
+  }
+]

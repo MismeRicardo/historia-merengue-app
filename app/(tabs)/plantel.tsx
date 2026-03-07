@@ -1,8 +1,9 @@
+import { API_BASE_URL } from '@/constants/api';
 import { Colors, Fonts, Universitario } from '@/constants/theme';
-import plantelData from '@/data/plantel.json';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
+    ActivityIndicator,
     FlatList,
     Modal,
     ScrollView,
@@ -24,8 +25,6 @@ const POSICIONES: Record<string, string> = {
 const ANIO_INICIO = 1928;
 const ANIO_FIN = 2026;
 const TODOS_LOS_ANIOS = Array.from({ length: ANIO_FIN - ANIO_INICIO + 1 }, (_, i) => ANIO_INICIO + i);
-const ANIOS_CON_DATOS = new Set(plantelData.map((p) => p.anio));
-
 // Agrupar por décadas
 const DECADAS = Array.from(
     new Set(TODOS_LOS_ANIOS.map((a) => Math.floor(a / 10) * 10))
@@ -34,13 +33,51 @@ const DECADAS = Array.from(
     anios: TODOS_LOS_ANIOS.filter((a) => Math.floor(a / 10) * 10 === dec),
 }));
 
+interface Jugador {
+    id: number;
+    nombre: string;
+    posicion: string;
+    numero: number;
+    nacionalidad: string;
+}
+
+interface Plantel {
+    anio: number;
+    dt: string;
+    goleador: string;
+    campeon: boolean;
+    jugadores: Jugador[];
+}
+
 export default function PlantelScreen() {
     const colorScheme = useColorScheme();
     const colors = Colors[colorScheme ?? 'light'];
 
-    const [anioSeleccionado, setAnioSeleccionado] = useState(plantelData[0].anio);
+    const [plantelData, setPlantelData] = useState<Plantel[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [anioSeleccionado, setAnioSeleccionado] = useState(ANIO_FIN);
     const [modalVisible, setModalVisible] = useState(false);
 
+    const cargarPlantel = () => {
+        setLoading(true);
+        setError(null);
+        fetch(`${API_BASE_URL}/api/plantel`)
+            .then((r) => {
+                if (!r.ok) throw new Error(`Error ${r.status}`);
+                return r.json();
+            })
+            .then((data: Plantel[]) => {
+                setPlantelData(data);
+                if (data.length > 0) setAnioSeleccionado(data[0].anio);
+            })
+            .catch((e: Error) => setError(e.message))
+            .finally(() => setLoading(false));
+    };
+
+    useEffect(() => { cargarPlantel(); }, []);
+
+    const ANIOS_CON_DATOS = new Set(plantelData.map((p) => p.anio));
     const plantelActual = plantelData.find((p) => p.anio === anioSeleccionado) ?? null;
 
     const seleccionarAnio = (anio: number) => {
@@ -60,65 +97,96 @@ export default function PlantelScreen() {
                     <Text style={styles.headerSubtitulo}>Jugadores por temporada</Text>
                 </View>
 
-                {/* Botón selector */}
-                <View style={styles.selectorRow}>
-                    <TouchableOpacity
-                        style={[styles.selectorBtn, { backgroundColor: Universitario.rojo }]}
-                        onPress={() => setModalVisible(true)}
-                        activeOpacity={0.8}
-                    >
-                        <Text style={styles.selectorBtnAnio}>{anioSeleccionado}</Text>
-                        <Text style={styles.selectorBtnLabel}>▼ Cambiar temporada</Text>
-                    </TouchableOpacity>
-                    {plantelActual?.campeon && (
-                        <View style={[styles.campeonPill, { backgroundColor: Universitario.dorado }]}>
-                            <Text style={styles.campeonPillText}>🏆 Campeón</Text>
-                        </View>
-                    )}
-                </View>
-
-                {plantelActual ? (
-                    <>
-                        {/* Info del DT */}
-                        <View style={[styles.dtCard, { backgroundColor: Universitario.blanco, borderLeftColor: Universitario.rojo }]}>
-                            <Text style={[styles.dtLabel, { color: colors.icon }]}>Director Técnico</Text>
-                            <Text style={[styles.dtNombre, { color: colors.text }]}>{plantelActual.dt}</Text>
-                        </View>
-
-                        {/* Goleador */}
-                        <View style={[styles.goleadorCard, { backgroundColor: Universitario.rojo }]}>
-                            <Text style={styles.goleadorLabel}>⚽ Goleador de la temporada</Text>
-                            <Text style={styles.goleadorNombre}>{plantelActual.goleador}</Text>
-                        </View>
-
-                        {/* Lista de jugadores */}
-                        <Text style={[styles.seccionLabel, { color: colors.text }]}>Jugadores ({plantelActual.jugadores.length})</Text>
-                        {plantelActual.jugadores.map((j) => (
-                            <View key={j.id} style={[styles.jugadorCard, { backgroundColor: Universitario.blanco }]}>
-                                <View style={[styles.numero, { backgroundColor: Universitario.rojo }]}>
-                                    <Text style={styles.numeroText}>{j.numero}</Text>
-                                </View>
-                                <View style={styles.jugadorInfo}>
-                                    <Text style={[styles.jugadorNombre, { color: colors.text }]}>{j.nombre}</Text>
-                                    <Text style={[styles.jugadorPos, { color: colors.icon }]}>
-                                        {POSICIONES[j.posicion] ?? '👤'} {j.posicion}
-                                    </Text>
-                                </View>
-                                <View style={[styles.bandera, { backgroundColor: Universitario.cremaOscuro }]}>
-                                    <Text style={[styles.banderaText, { color: colors.icon }]}>{j.nacionalidad}</Text>
-                                </View>
-                            </View>
-                        ))}
-                    </>
-                ) : (
-                    <View style={styles.sinDatos}>
-                        <Text style={styles.sinDatosEmoji}>📂</Text>
-                        <Text style={[styles.sinDatosTitulo, { color: colors.text }]}>Sin datos disponibles</Text>
-                        <Text style={[styles.sinDatosDesc, { color: colors.icon }]}>
-                            No tenemos el plantel registrado para {anioSeleccionado}.{'\n'}
-                            Prueba una temporada con el ícono 🏆 o datos recientes.
-                        </Text>
+                {/* Cargando */}
+                {loading && (
+                    <View style={styles.centrado}>
+                        <ActivityIndicator size="large" color={Universitario.rojo} />
+                        <Text style={[styles.cargandoText, { color: colors.icon }]}>Cargando temporadas…</Text>
                     </View>
+                )}
+
+                {/* Error */}
+                {!loading && error && (
+                    <View style={styles.centrado}>
+                        <Text style={styles.sinDatosEmoji}>⚠️</Text>
+                        <Text style={[styles.sinDatosTitulo, { color: colors.text }]}>Sin conexión</Text>
+                        <Text style={[styles.sinDatosDesc, { color: colors.icon }]}>
+                            No se pudo cargar el plantel.{'\n'}Verifica tu conexión e intenta de nuevo.
+                        </Text>
+                        <TouchableOpacity
+                            style={[styles.reintentar, { backgroundColor: Universitario.rojo }]}
+                            onPress={cargarPlantel}
+                            activeOpacity={0.8}
+                        >
+                            <Text style={styles.reintentarText}>Reintentar</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
+
+                {/* Contenido */}
+                {!loading && !error && (
+                    <>
+                        {/* Botón selector */}
+                        <View style={styles.selectorRow}>
+                            <TouchableOpacity
+                                style={[styles.selectorBtn, { backgroundColor: Universitario.rojo }]}
+                                onPress={() => setModalVisible(true)}
+                                activeOpacity={0.8}
+                            >
+                                <Text style={styles.selectorBtnAnio}>{anioSeleccionado}</Text>
+                                <Text style={styles.selectorBtnLabel}>▼ Cambiar temporada</Text>
+                            </TouchableOpacity>
+                            {plantelActual?.campeon && (
+                                <View style={[styles.campeonPill, { backgroundColor: Universitario.dorado }]}>
+                                    <Text style={styles.campeonPillText}>🏆 Campeón</Text>
+                                </View>
+                            )}
+                        </View>
+
+                        {plantelActual ? (
+                            <>
+                                {/* Info del DT */}
+                                <View style={[styles.dtCard, { backgroundColor: Universitario.blanco, borderLeftColor: Universitario.rojo }]}>
+                                    <Text style={[styles.dtLabel, { color: colors.icon }]}>Director Técnico</Text>
+                                    <Text style={[styles.dtNombre, { color: colors.text }]}>{plantelActual.dt}</Text>
+                                </View>
+
+                                {/* Goleador */}
+                                <View style={[styles.goleadorCard, { backgroundColor: Universitario.rojo }]}>
+                                    <Text style={styles.goleadorLabel}>⚽ Goleador de la temporada</Text>
+                                    <Text style={styles.goleadorNombre}>{plantelActual.goleador}</Text>
+                                </View>
+
+                                {/* Lista de jugadores */}
+                                <Text style={[styles.seccionLabel, { color: colors.text }]}>Jugadores ({plantelActual.jugadores.length})</Text>
+                                {plantelActual.jugadores.map((j) => (
+                                    <View key={j.id} style={[styles.jugadorCard, { backgroundColor: Universitario.blanco }]}>
+                                        <View style={[styles.numero, { backgroundColor: Universitario.rojo }]}>
+                                            <Text style={styles.numeroText}>{j.numero}</Text>
+                                        </View>
+                                        <View style={styles.jugadorInfo}>
+                                            <Text style={[styles.jugadorNombre, { color: colors.text }]}>{j.nombre}</Text>
+                                            <Text style={[styles.jugadorPos, { color: colors.icon }]}>
+                                                {POSICIONES[j.posicion] ?? '👤'} {j.posicion}
+                                            </Text>
+                                        </View>
+                                        <View style={[styles.bandera, { backgroundColor: Universitario.cremaOscuro }]}>
+                                            <Text style={[styles.banderaText, { color: colors.icon }]}>{j.nacionalidad}</Text>
+                                        </View>
+                                    </View>
+                                ))}
+                            </>
+                        ) : (
+                            <View style={styles.sinDatos}>
+                                <Text style={styles.sinDatosEmoji}>📂</Text>
+                                <Text style={[styles.sinDatosTitulo, { color: colors.text }]}>Sin datos disponibles</Text>
+                                <Text style={[styles.sinDatosDesc, { color: colors.icon }]}>
+                                    No tenemos el plantel registrado para {anioSeleccionado}.{'\n'}
+                                    Prueba una temporada con el ícono 🏆 o datos recientes.
+                                </Text>
+                            </View>
+                        )}
+                    </>
                 )}
             </ScrollView>
 
@@ -322,6 +390,21 @@ const styles = StyleSheet.create({
     sinDatosEmoji: { fontSize: 48 },
     sinDatosTitulo: { fontSize: 18, fontFamily: Fonts.bold, textAlign: 'center' },
     sinDatosDesc: { fontSize: 13, fontFamily: Fonts.regular, textAlign: 'center', lineHeight: 20, marginTop: 4 },
+    // Cargando / Error
+    centrado: {
+        alignItems: 'center',
+        paddingVertical: 56,
+        paddingHorizontal: 32,
+        gap: 12,
+    },
+    cargandoText: { fontSize: 14, fontFamily: Fonts.regular, marginTop: 8 },
+    reintentar: {
+        marginTop: 8,
+        borderRadius: 12,
+        paddingHorizontal: 24,
+        paddingVertical: 12,
+    },
+    reintentarText: { fontSize: 14, fontFamily: Fonts.semiBold, color: Universitario.crema },
     // Modal
     modalContainer: { flex: 1 },
     modalHeader: {

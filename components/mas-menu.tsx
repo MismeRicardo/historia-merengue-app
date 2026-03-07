@@ -17,7 +17,7 @@ type BadgeType = { label: string; color: string };
 type MenuItem = {
     label: string;
     href: string;
-    icono: 'clock.fill' | 'person.3.fill' | 'star.fill' | 'info.circle.fill' | 'sportscourt.fill' | 'calendar' | 'magnifyingglass';
+    icono: 'clock.fill' | 'person.3.fill' | 'star.fill' | 'info.circle.fill' | 'sportscourt.fill' | 'calendar' | 'magnifyingglass' | 'person.fill';
     badge?: BadgeType;
 };
 
@@ -36,6 +36,16 @@ const MENU_ITEMS: MenuItem[] = [
         label: 'Goleadores',
         href: '/(tabs)/goleadores',
         icono: 'sportscourt.fill',
+    },
+    {
+        label: 'Camisetas',
+        href: '/(tabs)/camisetas',
+        icono: 'star.fill',
+    },
+    {
+        label: 'Entrenadores',
+        href: '/(tabs)/entrenadores',
+        icono: 'person.fill',
     },
 ];
 

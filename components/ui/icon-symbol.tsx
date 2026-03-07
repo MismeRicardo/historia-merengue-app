@@ -29,6 +29,7 @@ const MAPPING = {
   'photo.fill': 'photo-library',
   'sportscourt.fill': 'sports-soccer',
   'line.3.horizontal': 'menu',
+  'person.fill': 'person',
 } as IconMapping;
 
 /**

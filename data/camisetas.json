@@ -1,0 +1,106 @@
+[
+  {
+    "anio": 2024,
+    "proveedor": "Umbro",
+    "colores": ["Blanco", "Rojo"],
+    "descripcion": "Camiseta titular con franjas diagonales rojas sobre fondo blanco. Cuello redondo con detalle rojo.",
+    "tipo": "titular",
+    "imagen": "https://picsum.photos/seed/camiseta2024/400/300"
+  },
+  {
+    "anio": 2024,
+    "proveedor": "Umbro",
+    "colores": ["Rojo", "Blanco"],
+    "descripcion": "Camiseta alternativa completamente roja con detalles blancos en cuello y mangas.",
+    "tipo": "alternativa",
+    "imagen": null
+  },
+  {
+    "anio": 2023,
+    "proveedor": "Umbro",
+    "colores": ["Blanco", "Rojo"],
+    "descripcion": "Diseño clásico con rayas verticales finas. Celebración del centenario del club.",
+    "tipo": "titular",
+    "imagen": null
+  },
+  {
+    "anio": 2022,
+    "proveedor": "Umbro",
+    "colores": ["Blanco", "Rojo"],
+    "descripcion": "Franjas anchas diagonales rojas y blancas. Cuello tipo polo.",
+    "tipo": "titular",
+    "imagen": null
+  },
+  {
+    "anio": 2022,
+    "proveedor": "Umbro",
+    "colores": ["Negro", "Rojo"],
+    "descripcion": "Alternativa negra con líneas rojas en costados y escudo bordado en dorado.",
+    "tipo": "alternativa",
+    "imagen": null
+  },
+  {
+    "anio": 2020,
+    "proveedor": "Umbro",
+    "colores": ["Blanco", "Rojo"],
+    "descripcion": "Diseño minimalista con una sola diagonal roja ancha sobre fondo blanco.",
+    "tipo": "titular",
+    "imagen": null
+  },
+  {
+    "anio": 2018,
+    "proveedor": "Umbro",
+    "colores": ["Blanco", "Rojo"],
+    "descripcion": "Franjas clásicas crema y rojo con escudo tradicional bordado.",
+    "tipo": "titular",
+    "imagen": null
+  },
+  {
+    "anio": 2015,
+    "proveedor": "Umbro",
+    "colores": ["Blanco", "Rojo"],
+    "descripcion": "Diseño con textura en el tejido. Rayas verticales rojas y blancas.",
+    "tipo": "titular",
+    "imagen": null
+  },
+  {
+    "anio": 2013,
+    "proveedor": "Umbro",
+    "colores": ["Blanco", "Rojo"],
+    "descripcion": "Camiseta de la temporada campeona. Rayas diagonales con cuello en V.",
+    "tipo": "titular",
+    "imagen": null
+  },
+  {
+    "anio": 2009,
+    "proveedor": "Umbro",
+    "colores": ["Blanco", "Rojo"],
+    "descripcion": "Clásica con franjas anchas. Una de las más recordadas por los hinchas.",
+    "tipo": "titular",
+    "imagen": null
+  },
+  {
+    "anio": 2000,
+    "proveedor": "Penalty",
+    "colores": ["Blanco", "Rojo"],
+    "descripcion": "Diseño del cambio de milenio, cuello redondo, franjas clásicas.",
+    "tipo": "titular",
+    "imagen": null
+  },
+  {
+    "anio": 1992,
+    "proveedor": "Adidas",
+    "colores": ["Blanco", "Rojo"],
+    "descripcion": "Primera camiseta con patrocinio Adidas. Tres rayas en los hombros.",
+    "tipo": "titular",
+    "imagen": null
+  },
+  {
+    "anio": 1985,
+    "proveedor": "Sin proveedor",
+    "colores": ["Blanco", "Rojo"],
+    "descripcion": "Diseño de la era dorada del club. Cuello redondo, sin patrocinador.",
+    "tipo": "titular",
+    "imagen": null
+  }
+]
