@@ -1,8 +1,11 @@
+import { API_BASE_URL } from '@/constants/api';
 import { Colors, Fonts, Universitario } from '@/constants/theme';
-import camisetasData from '@/data/camisetas.json';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useState } from 'react';
+import { useRouter } from 'expo-router';
+import { useEffect, useMemo, useState } from 'react';
 import {
+    ActivityIndicator,
+    Dimensions,
     FlatList,
     Image,
     Modal,
@@ -16,7 +19,8 @@ import {
 const ANIO_INICIO = 1924;
 const ANIO_FIN = 2026;
 const TODOS_LOS_ANIOS = Array.from({ length: ANIO_FIN - ANIO_INICIO + 1 }, (_, i) => ANIO_INICIO + i);
-const ANIOS_CON_DATOS = new Set(camisetasData.map((c) => c.anio));
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const CARD_WIDTH = (SCREEN_WIDTH - 48) / 2; // 2 columns with padding
 
 const DECADAS = Array.from(
     new Set(TODOS_LOS_ANIOS.map((a) => Math.floor(a / 10) * 10))
@@ -25,19 +29,82 @@ const DECADAS = Array.from(
     anios: TODOS_LOS_ANIOS.filter((a) => Math.floor(a / 10) * 10 === dec),
 }));
 
-const TIPO_COLOR: Record<string, { bg: string; text: string; label: string }> = {
-    titular: { bg: Universitario.rojo, text: Universitario.crema, label: 'Titular' },
-    alternativa: { bg: Universitario.negro, text: Universitario.crema, label: 'Alternativa' },
-    tercera: { bg: Universitario.dorado, text: Universitario.negro, label: 'Tercera' },
+function labelColor(tipo: string): { bg: string; text: string } {
+    const t = tipo.toLowerCase();
+    if (t.startsWith('alternativa')) return { bg: Universitario.negro, text: Universitario.crema };
+    if (t.includes('tercera') || t.includes('copa')) return { bg: Universitario.dorado, text: Universitario.negro };
+    return { bg: Universitario.rojo, text: Universitario.crema };
+}
+
+type Camiseta = {
+    id: number;
+    anio: number;
+    proveedor: string;
+    colores: string[];
+    descripcion: string;
+    tipo: string;
+    principal: string | null;
+    imagenes: string[];
+};
+
+type CamisetasTemporadaApi = {
+    anio: number;
+    camisetas: Array<{
+        id: number;
+        proveedor: string;
+        colores: string[];
+        descripcion: string;
+        tipo: string;
+        principal: string | null;
+        imagenes: string[];
+    }>;
 };
 
 export default function CamisetasScreen() {
     const colorScheme = useColorScheme();
     const colors = Colors[colorScheme ?? 'light'];
 
-    const anioInicial = camisetasData.reduce((max, c) => Math.max(max, c.anio), 0);
-    const [anioSeleccionado, setAnioSeleccionado] = useState(anioInicial);
+    const router = useRouter();
+    const [camisetasData, setCamisetasData] = useState<Camiseta[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [anioSeleccionado, setAnioSeleccionado] = useState(ANIO_FIN);
     const [modalVisible, setModalVisible] = useState(false);
+
+    const cargarCamisetas = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/camisetas`);
+            if (!res.ok) throw new Error(`Error ${res.status}`);
+
+            const data = (await res.json()) as CamisetasTemporadaApi[];
+            const flat = data.flatMap((t) =>
+                t.camisetas.map((c) => ({
+                    ...c,
+                    anio: t.anio,
+                }))
+            );
+
+            setCamisetasData(flat);
+
+            const anioMasReciente = flat.reduce((max, c) => Math.max(max, c.anio), 0);
+            if (anioMasReciente > 0) setAnioSeleccionado(anioMasReciente);
+        } catch (e) {
+            setError(e instanceof Error ? e.message : 'Error de conexión');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        cargarCamisetas();
+    }, []);
+
+    const ANIOS_CON_DATOS = useMemo(
+        () => new Set(camisetasData.map((c) => c.anio)),
+        [camisetasData]
+    );
 
     const camisetasAnio = camisetasData.filter((c) => c.anio === anioSeleccionado);
     const tieneDatos = camisetasAnio.length > 0;
@@ -72,10 +139,24 @@ export default function CamisetasScreen() {
                 </View>
 
                 {/* Contenido */}
-                {tieneDatos ? (
-                    <View style={styles.camisetasContainer}>
+                {loading ? (
+                    <View style={styles.estadoContainer}>
+                        <ActivityIndicator size="large" color={Universitario.rojo} />
+                        <Text style={[styles.estadoTexto, { color: colors.icon }]}>Cargando camisetas...</Text>
+                    </View>
+                ) : error ? (
+                    <View style={styles.estadoContainer}>
+                        <Text style={styles.sinDatosIcono}>⚠️</Text>
+                        <Text style={[styles.sinDatosTitulo, { color: colors.text }]}>Sin conexión</Text>
+                        <Text style={[styles.sinDatosSubtitulo, { color: Universitario.grisMedio }]}>No pudimos cargar las camisetas.</Text>
+                        <TouchableOpacity style={styles.reintentarBtn} onPress={cargarCamisetas} activeOpacity={0.8}>
+                            <Text style={styles.reintentarText}>Reintentar</Text>
+                        </TouchableOpacity>
+                    </View>
+                ) : tieneDatos ? (
+                    <View style={styles.grid}>
                         {camisetasAnio.map((camiseta, idx) => {
-                            const tipoInfo = TIPO_COLOR[camiseta.tipo] ?? TIPO_COLOR.titular;
+                            const { bg, text } = labelColor(camiseta.tipo);
                             const color1 =
                                 camiseta.colores[0] === 'Blanco' ? '#FFFFFF'
                                     : camiseta.colores[0] === 'Rojo' ? Universitario.rojo
@@ -89,71 +170,37 @@ export default function CamisetasScreen() {
                                 : color1;
 
                             return (
-                                <View key={idx} style={[styles.camisetaCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                                    {/* Imagen / placeholder de colores */}
-                                    {camiseta.imagen ? (
-                                        <Image
-                                            source={{ uri: camiseta.imagen }}
-                                            style={styles.camisetaImagen}
-                                            resizeMode="contain"
-                                        />
-                                    ) : (
-                                        <View style={styles.camisetaPlaceholder}>
-                                            {/* Franjas diagonales con los colores de la camiseta */}
-                                            <View style={[styles.franjaPlaceholder, { backgroundColor: color1 }]} />
-                                            <View style={[styles.franjaPlaceholder, { backgroundColor: color2 }]} />
-                                            <View style={styles.placeholderOverlay}>
-                                                <Text style={styles.placeholderIcono}>👕</Text>
-                                                <Text style={styles.placeholderAnio}>{camiseta.anio}</Text>
+                                <TouchableOpacity
+                                    key={idx}
+                                    activeOpacity={0.85}
+                                    onPress={() => router.push(`/camiseta/${camiseta.id}?anio=${camiseta.anio}` as any)}
+                                >
+                                    <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                                        {/* Imagen o placeholder */}
+                                        {camiseta.principal ? (
+                                            <Image
+                                                source={{ uri: camiseta.principal }}
+                                                style={styles.cardImagen}
+                                                resizeMode="cover"
+                                            />
+                                        ) : (
+                                            <View style={styles.cardPlaceholder}>
+                                                <View style={[styles.franja, { backgroundColor: color1 }]} />
+                                                <View style={[styles.franja, { backgroundColor: color2 }]} />
+                                                <View style={styles.placeholderOverlay}>
+                                                    <Text style={styles.placeholderIcono}>👕</Text>
+                                                </View>
                                             </View>
-                                        </View>
-                                    )}
+                                        )}
 
-                                    {/* Info */}
-                                    <View style={styles.camisetaInfo}>
-                                        {/* Tipo + proveedor */}
-                                        <View style={styles.camisetaTopRow}>
-                                            <View style={[styles.tipoPill, { backgroundColor: tipoInfo.bg }]}>
-                                                <Text style={[styles.tipoPillText, { color: tipoInfo.text }]}>
-                                                    {tipoInfo.label}
-                                                </Text>
-                                            </View>
-                                            <Text style={[styles.proveedorText, { color: colors.icon }]}>
-                                                {camiseta.proveedor}
+                                        {/* Etiqueta de tipo */}
+                                        <View style={[styles.labelBar, { backgroundColor: bg }]}>
+                                            <Text style={[styles.labelText, { color: text }]} numberOfLines={1}>
+                                                {camiseta.tipo}
                                             </Text>
                                         </View>
-
-                                        <Text style={[styles.descripcion, { color: colors.text }]}>
-                                            {camiseta.descripcion}
-                                        </Text>
-
-                                        {/* Chips de colores */}
-                                        <View style={styles.coloresRow}>
-                                            {camiseta.colores.map((color, i) => {
-                                                const dotColor =
-                                                    color === 'Blanco' ? '#FFFFFF'
-                                                        : color === 'Rojo' ? Universitario.rojo
-                                                            : color === 'Negro' ? Universitario.negro
-                                                                : Universitario.dorado;
-                                                return (
-                                                    <View key={i} style={styles.colorChip}>
-                                                        <View
-                                                            style={[
-                                                                styles.colorDot,
-                                                                {
-                                                                    backgroundColor: dotColor,
-                                                                    borderWidth: color === 'Blanco' ? 1 : 0,
-                                                                    borderColor: '#DDD',
-                                                                },
-                                                            ]}
-                                                        />
-                                                        <Text style={[styles.colorLabel, { color: colors.text }]}>{color}</Text>
-                                                    </View>
-                                                );
-                                            })}
-                                        </View>
                                     </View>
-                                </View>
+                                </TouchableOpacity>
                             );
                         })}
                     </View>
@@ -280,101 +327,56 @@ const styles = StyleSheet.create({
         opacity: 0.8,
     },
 
-    camisetasContainer: {
-        paddingHorizontal: 20,
-        gap: 20,
+    // Grid de 2 columnas
+    grid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        paddingHorizontal: 16,
+        gap: 16,
     },
-    camisetaCard: {
-        borderRadius: 20,
+    card: {
+        width: CARD_WIDTH,
+        borderRadius: 16,
         borderWidth: 1,
         overflow: 'hidden',
         elevation: 3,
         shadowColor: '#000',
         shadowOpacity: 0.08,
-        shadowRadius: 10,
-        shadowOffset: { width: 0, height: 3 },
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 2 },
     },
-
-    // Imagen real
-    camisetaImagen: {
+    cardImagen: {
         width: '100%',
-        height: 220,
+        height: CARD_WIDTH * 1.1,
         backgroundColor: Universitario.grisClaro,
     },
-
-    // Placeholder cuando no hay imagen
-    camisetaPlaceholder: {
+    cardPlaceholder: {
         width: '100%',
-        height: 220,
+        height: CARD_WIDTH * 1.1,
         flexDirection: 'row',
         overflow: 'hidden',
-        position: 'relative',
     },
-    franjaPlaceholder: {
+    franja: {
         flex: 1,
     },
     placeholderOverlay: {
         position: 'absolute',
-        inset: 0,
+        top: 0, left: 0, right: 0, bottom: 0,
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 6,
     },
     placeholderIcono: {
-        fontSize: 52,
+        fontSize: 48,
     },
-    placeholderAnio: {
-        fontSize: 15,
-        fontFamily: Fonts.black,
-        color: 'rgba(0,0,0,0.35)',
-        letterSpacing: 1,
-    },
-
-    camisetaInfo: {
-        padding: 16,
-        gap: 10,
-    },
-    camisetaTopRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-    },
-    tipoPill: {
-        borderRadius: 20,
+    labelBar: {
+        paddingVertical: 8,
         paddingHorizontal: 10,
-        paddingVertical: 3,
-    },
-    tipoPillText: {
-        fontSize: 11,
-        fontFamily: Fonts.bold,
-    },
-    proveedorText: {
-        fontSize: 12,
-        fontFamily: Fonts.regular,
-    },
-    descripcion: {
-        fontSize: 13,
-        fontFamily: Fonts.regular,
-        lineHeight: 18,
-    },
-    coloresRow: {
-        flexDirection: 'row',
-        gap: 10,
-        flexWrap: 'wrap',
-    },
-    colorChip: {
-        flexDirection: 'row',
         alignItems: 'center',
-        gap: 4,
     },
-    colorDot: {
-        width: 12,
-        height: 12,
-        borderRadius: 6,
-    },
-    colorLabel: {
-        fontSize: 11,
-        fontFamily: Fonts.regular,
+    labelText: {
+        fontSize: 12,
+        fontFamily: Fonts.bold,
+        letterSpacing: 0.3,
     },
 
     sinDatos: {
@@ -395,6 +397,28 @@ const styles = StyleSheet.create({
         fontFamily: Fonts.regular,
         textAlign: 'center',
         lineHeight: 20,
+    },
+    estadoContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 50,
+        gap: 10,
+    },
+    estadoTexto: {
+        fontSize: 14,
+        fontFamily: Fonts.regular,
+    },
+    reintentarBtn: {
+        marginTop: 6,
+        backgroundColor: Universitario.rojo,
+        paddingHorizontal: 14,
+        paddingVertical: 8,
+        borderRadius: 10,
+    },
+    reintentarText: {
+        color: Universitario.crema,
+        fontSize: 12,
+        fontFamily: Fonts.bold,
     },
 
     // Modal

@@ -28,6 +28,7 @@ const MAPPING = {
   'info.circle.fill': 'info',
   'photo.fill': 'photo-library',
   'sportscourt.fill': 'sports-soccer',
+  'questionmark.circle.fill': 'quiz',
   'line.3.horizontal': 'menu',
   'person.fill': 'person',
 } as IconMapping;

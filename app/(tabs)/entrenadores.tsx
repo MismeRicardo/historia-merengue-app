@@ -1,10 +1,13 @@
+import { API_BASE_URL } from '@/constants/api';
 import { Colors, Fonts, Universitario } from '@/constants/theme';
-import entrenadoresData from '@/data/entrenadores.json';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useEffect, useMemo, useState } from 'react';
 import {
+    ActivityIndicator,
     ScrollView,
     StyleSheet,
     Text,
+    TouchableOpacity,
     View,
 } from 'react-native';
 
@@ -18,163 +21,297 @@ interface Entrenador {
     nombre: string;
     nacionalidad: string;
     periodos: Periodo[];
-    titulos: string[];
-    partidos: number;
+    titulos: number;
     descripcion: string;
     activo: boolean;
 }
 
 const BANDERAS: Record<string, string> = {
     'Perú': '🇵🇪',
+    'Peru': '🇵🇪',
     'Argentina': '🇦🇷',
     'Uruguay': '🇺🇾',
     'España': '🇪🇸',
-    'Inglaterra': '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
+    'Inglaterra': '🏴',
     'Colombia': '🇨🇴',
     'Brasil': '🇧🇷',
     'Chile': '🇨🇱',
 };
 
 function formatPeriodo(periodo: Periodo): string {
+    if (periodo.hasta === periodo.desde) {
+        return String(periodo.desde);
+    }
     return `${periodo.desde} – ${periodo.hasta ?? 'Presente'}`;
 }
 
-function totalAnios(periodos: Periodo[]): string {
-    let meses = 0;
-    for (const p of periodos) {
-        const hasta = p.hasta ?? new Date().getFullYear();
-        meses += (hasta - p.desde) * 12;
-    }
-    const anios = Math.floor(meses / 12);
-    const resto = meses % 12;
-    if (anios === 0) return `${resto} meses`;
-    if (resto === 0) return `${anios} año${anios !== 1 ? 's' : ''}`;
-    return `${anios} año${anios !== 1 ? 's' : ''} ${resto} m`;
+function normalizarPais(pais: string): string {
+    return pais
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim()
+        .toLowerCase();
 }
 
 export default function EntrenadoresScreen() {
     const colorScheme = useColorScheme();
     const colors = Colors[colorScheme ?? 'light'];
 
-    // Ordenar: activos primero, luego por último período más reciente
-    const entrenadores = [...(entrenadoresData as Entrenador[])].sort((a, b) => {
-        if (a.activo && !b.activo) return -1;
-        if (!a.activo && b.activo) return 1;
-        const aMax = Math.max(...a.periodos.map((p) => p.hasta ?? 9999));
-        const bMax = Math.max(...b.periodos.map((p) => p.hasta ?? 9999));
-        return bMax - aMax;
-    });
+    const [entrenadores, setEntrenadores] = useState<Entrenador[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [filtroOtros, setFiltroOtros] = useState<'todos' | 'conTitulos' | 'sinTitulos'>('todos');
+
+    const cargarEntrenadores = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/entrenadores`);
+            if (!res.ok) throw new Error(`Error ${res.status}`);
+            const data = (await res.json()) as Entrenador[];
+            setEntrenadores(data);
+        } catch (e) {
+            setError(e instanceof Error ? e.message : 'Error de conexion');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        cargarEntrenadores();
+    }, []);
+
+    const entrenadoresOrdenados = useMemo(
+        () =>
+            [...entrenadores].sort((a, b) => {
+                if (a.activo && !b.activo) return -1;
+                if (!a.activo && b.activo) return 1;
+                const aMax = Math.max(...a.periodos.map((p) => p.hasta ?? 9999));
+                const bMax = Math.max(...b.periodos.map((p) => p.hasta ?? 9999));
+                return bMax - aMax;
+            }),
+        [entrenadores]
+    );
+
+    const entrenadorActual = useMemo(
+        () => entrenadoresOrdenados.find((entrenador) => entrenador.activo) ?? null,
+        [entrenadoresOrdenados]
+    );
+
+    const otrosEntrenadores = useMemo(() => {
+        const base = entrenadorActual
+            ? entrenadoresOrdenados.filter((entrenador) => entrenador.id !== entrenadorActual.id)
+            : entrenadoresOrdenados;
+
+        if (filtroOtros === 'conTitulos') return base.filter((entrenador) => entrenador.titulos > 0);
+        if (filtroOtros === 'sinTitulos') return base.filter((entrenador) => entrenador.titulos === 0);
+        return base;
+    }, [entrenadoresOrdenados, entrenadorActual, filtroOtros]);
+
+    const textoFiltro =
+        filtroOtros === 'todos'
+            ? 'Filtrar: Todos'
+            : filtroOtros === 'conTitulos'
+                ? 'Filtrar: Con titulos'
+                : 'Filtrar: Sin titulos';
+
+    const cambiarFiltroOtros = () => {
+        setFiltroOtros((previo) =>
+            previo === 'todos' ? 'conTitulos' : previo === 'conTitulos' ? 'sinTitulos' : 'todos'
+        );
+    };
+
+    const renderEntrenadorCard = (entrenador: Entrenador) => {
+        const nacionalidad = entrenador.nacionalidad?.trim() || 'Sin nacionalidad';
+        const banderaDirecta = BANDERAS[nacionalidad];
+        const keyCompat = Object.keys(BANDERAS).find(
+            (key) => normalizarPais(key) === normalizarPais(nacionalidad)
+        );
+        const bandera = banderaDirecta ?? (keyCompat ? BANDERAS[keyCompat] : '🏳️');
+
+        return (
+            <View
+                key={entrenador.id}
+                style={[
+                    styles.card,
+                    { backgroundColor: colors.card, borderColor: colors.border },
+                    entrenador.activo && styles.cardActivo,
+                ]}
+            >
+                <View style={styles.cardLeft}>
+                    <View
+                        style={[
+                            styles.avatar,
+                            {
+                                backgroundColor: entrenador.activo
+                                    ? Universitario.rojo
+                                    : Universitario.grisClaro,
+                            },
+                        ]}
+                    >
+                        <Text
+                            style={[
+                                styles.avatarLetra,
+                                {
+                                    color: entrenador.activo
+                                        ? Universitario.crema
+                                        : Universitario.grisMedio,
+                                },
+                            ]}
+                        >
+                            {entrenador.nombre.charAt(0)}
+                        </Text>
+                    </View>
+                    {entrenador.activo && (
+                        <View style={styles.activoBadge}>
+                            <Text style={styles.activoBadgeText}>DT</Text>
+                        </View>
+                    )}
+                </View>
+
+                <View style={styles.cardBody}>
+                    <View style={styles.cardTitleRow}>
+                        <Text style={[styles.nombre, { color: colors.text }]}>{entrenador.nombre}</Text>
+                        <Text style={styles.bandera}>{bandera}</Text>
+                    </View>
+
+                    <Text style={[styles.nacionalidad, { color: Universitario.grisMedio }]}>
+                        {nacionalidad}
+                    </Text>
+
+                    <View style={styles.periodosRow}>
+                        {entrenador.periodos.map((periodo, index) => (
+                            <View
+                                key={index}
+                                style={[
+                                    styles.periodoPill,
+                                    {
+                                        backgroundColor: entrenador.activo
+                                            ? Universitario.rojo + '18'
+                                            : colors.background,
+                                    },
+                                ]}
+                            >
+                                <Text
+                                    style={[
+                                        styles.periodoText,
+                                        {
+                                            color: entrenador.activo
+                                                ? Universitario.rojo
+                                                : Universitario.grisMedio,
+                                        },
+                                    ]}
+                                >
+                                    {formatPeriodo(periodo)}
+                                </Text>
+                            </View>
+                        ))}
+                    </View>
+
+                    <Text style={[styles.descripcion, { color: colors.text }]}>
+                        {entrenador.descripcion}
+                    </Text>
+
+                    {entrenador.titulos > 0 && (
+                        <View style={styles.titulosContainer}>
+                            <Text style={[styles.titulosLabel, { color: Universitario.grisMedio }]}>
+                                🏆 {entrenador.titulos === 1 ? '1 título' : `${entrenador.titulos} títulos`}
+                            </Text>
+                        </View>
+                    )}
+                </View>
+            </View>
+        );
+    };
 
     return (
         <ScrollView
             style={[styles.container, { backgroundColor: colors.background }]}
             contentContainerStyle={styles.content}
         >
-            {/* Encabezado */}
             <View style={[styles.header, { backgroundColor: Universitario.rojo }]}>
                 <Text style={styles.headerTitulo}>Entrenadores</Text>
                 <Text style={styles.headerSubtitulo}>Directores técnicos históricos</Text>
             </View>
 
-            {/* Stat rápida */}
-            <View style={styles.statsRow}>
-                <View style={[styles.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                    <Text style={[styles.statNum, { color: Universitario.rojo }]}>{entrenadores.length}</Text>
-                    <Text style={[styles.statLabel, { color: Universitario.grisMedio }]}>Entrenadores</Text>
-                </View>
-                <View style={[styles.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                    <Text style={[styles.statNum, { color: Universitario.rojo }]}>
-                        {entrenadores.reduce((s, e) => s + e.titulos.length, 0)}
-                    </Text>
-                    <Text style={[styles.statLabel, { color: Universitario.grisMedio }]}>Títulos</Text>
-                </View>
-                <View style={[styles.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                    <Text style={[styles.statNum, { color: Universitario.rojo }]}>
-                        {entrenadores.reduce((s, e) => s + e.partidos, 0)}
-                    </Text>
-                    <Text style={[styles.statLabel, { color: Universitario.grisMedio }]}>Partidos</Text>
-                </View>
-            </View>
-
-            {/* Lista de entrenadores */}
             <View style={styles.lista}>
-                {entrenadores.map((dt) => {
-                    const bandera = BANDERAS[dt.nacionalidad] ?? '🏳️';
-                    return (
-                        <View
-                            key={dt.id}
-                            style={[
-                                styles.card,
-                                { backgroundColor: colors.card, borderColor: colors.border },
-                                dt.activo && styles.cardActivo,
-                            ]}
+                {loading ? (
+                    <View style={styles.estadoContainer}>
+                        <ActivityIndicator size="large" color={Universitario.rojo} />
+                        <Text style={[styles.estadoTexto, { color: colors.icon }]}>Cargando entrenadores...</Text>
+                    </View>
+                ) : error ? (
+                    <View style={styles.estadoContainer}>
+                        <Text style={styles.estadoEmoji}>⚠️</Text>
+                        <Text style={[styles.estadoTitulo, { color: colors.text }]}>Sin conexión</Text>
+                        <Text style={[styles.estadoTexto, { color: Universitario.grisMedio }]}>No pudimos cargar entrenadores.</Text>
+                        <TouchableOpacity
+                            style={styles.reintentarBtn}
+                            onPress={cargarEntrenadores}
+                            activeOpacity={0.8}
                         >
-                            {/* Avatar inicial + badge activo */}
-                            <View style={styles.cardLeft}>
-                                <View style={[styles.avatar, { backgroundColor: dt.activo ? Universitario.rojo : Universitario.grisClaro }]}>
-                                    <Text style={[styles.avatarLetra, { color: dt.activo ? Universitario.crema : Universitario.grisMedio }]}>
-                                        {dt.nombre.charAt(0)}
-                                    </Text>
-                                </View>
-                                {dt.activo && (
-                                    <View style={styles.activoBadge}>
-                                        <Text style={styles.activoBadgeText}>DT</Text>
-                                    </View>
-                                )}
-                            </View>
-
-                            {/* Info principal */}
-                            <View style={styles.cardBody}>
-                                <View style={styles.cardTitleRow}>
-                                    <Text style={[styles.nombre, { color: colors.text }]}>{dt.nombre}</Text>
-                                    <Text style={styles.bandera}>{bandera}</Text>
-                                </View>
-
-                                <Text style={[styles.nacionalidad, { color: Universitario.grisMedio }]}>
-                                    {dt.nacionalidad} · {totalAnios(dt.periodos)}
-                                </Text>
-
-                                {/* Períodos */}
-                                <View style={styles.periodosRow}>
-                                    {dt.periodos.map((p, i) => (
-                                        <View key={i} style={[styles.periodoPill, { backgroundColor: dt.activo ? Universitario.rojo + '18' : colors.background }]}>
-                                            <Text style={[styles.periodoText, { color: dt.activo ? Universitario.rojo : Universitario.grisMedio }]}>
-                                                {formatPeriodo(p)}
-                                            </Text>
-                                        </View>
-                                    ))}
-                                </View>
-
-                                <Text style={[styles.descripcion, { color: colors.text }]}>
-                                    {dt.descripcion}
-                                </Text>
-
-                                {/* Títulos */}
-                                {dt.titulos.length > 0 && (
-                                    <View style={styles.titulosContainer}>
-                                        <Text style={[styles.titulosLabel, { color: Universitario.grisMedio }]}>
-                                            🏆 {dt.titulos.length === 1 ? '1 título' : `${dt.titulos.length} títulos`}
-                                        </Text>
-                                        <View style={styles.titulosList}>
-                                            {dt.titulos.map((t, i) => (
-                                                <View key={i} style={[styles.tituloPill, { backgroundColor: Universitario.dorado + '22' }]}>
-                                                    <Text style={[styles.tituloPillText, { color: Universitario.rojoOscuro }]}>{t}</Text>
-                                                </View>
-                                            ))}
-                                        </View>
-                                    </View>
-                                )}
-
-                                {/* Footer: partidos */}
-                                <View style={[styles.cardFooter, { borderTopColor: colors.border }]}>
-                                    <Text style={[styles.partidosText, { color: Universitario.grisMedio }]}>
-                                        {dt.partidos} partidos dirigidos
-                                    </Text>
-                                </View>
-                            </View>
+                            <Text style={styles.reintentarText}>Reintentar</Text>
+                        </TouchableOpacity>
+                    </View>
+                ) : entrenadoresOrdenados.length === 0 ? (
+                    <View style={styles.estadoContainer}>
+                        <Text style={styles.estadoEmoji}>📋</Text>
+                        <Text style={[styles.estadoTitulo, { color: colors.text }]}>Sin entrenadores</Text>
+                        <Text style={[styles.estadoTexto, { color: Universitario.grisMedio }]}>Aún no hay entrenadores registrados.</Text>
+                    </View>
+                ) : (
+                    <>
+                        <View style={styles.seccionHeader}>
+                            <Text style={[styles.seccionTitulo, { color: colors.text }]}>Entrenador actual</Text>
                         </View>
-                    );
-                })}
+
+                        {entrenadorActual ? (
+                            renderEntrenadorCard(entrenadorActual)
+                        ) : (
+                            <View
+                                style={[
+                                    styles.sinActualCard,
+                                    { backgroundColor: colors.card, borderColor: colors.border },
+                                ]}
+                            >
+                                <Text style={[styles.sinActualText, { color: Universitario.grisMedio }]}>
+                                    No hay entrenador marcado como activo.
+                                </Text>
+                            </View>
+                        )}
+
+                        <View style={styles.otrosHeader}>
+                            <Text style={[styles.seccionTitulo, { color: colors.text }]}>Otros entrenadores</Text>
+                            <TouchableOpacity
+                                style={[
+                                    styles.filtroBtn,
+                                    { backgroundColor: colors.card, borderColor: colors.border },
+                                ]}
+                                onPress={cambiarFiltroOtros}
+                                activeOpacity={0.8}
+                            >
+                                <Text style={[styles.filtroBtnText, { color: Universitario.rojo }]}>
+                                    {textoFiltro}
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        {otrosEntrenadores.length === 0 ? (
+                            <View
+                                style={[
+                                    styles.sinActualCard,
+                                    { backgroundColor: colors.card, borderColor: colors.border },
+                                ]}
+                            >
+                                <Text style={[styles.sinActualText, { color: Universitario.grisMedio }]}>
+                                    No hay entrenadores para este filtro.
+                                </Text>
+                            </View>
+                        ) : (
+                            otrosEntrenadores.map((entrenador) => renderEntrenadorCard(entrenador))
+                        )}
+                    </>
+                )}
             </View>
         </ScrollView>
     );
@@ -202,32 +339,77 @@ const styles = StyleSheet.create({
         marginTop: 2,
     },
 
-    statsRow: {
-        flexDirection: 'row',
-        paddingHorizontal: 20,
-        paddingVertical: 16,
-        gap: 10,
-    },
-    statCard: {
-        flex: 1,
-        borderRadius: 14,
-        borderWidth: 1,
-        paddingVertical: 14,
-        alignItems: 'center',
-    },
-    statNum: {
-        fontSize: 22,
-        fontFamily: Fonts.black,
-    },
-    statLabel: {
-        fontSize: 11,
-        fontFamily: Fonts.regular,
-        marginTop: 2,
-    },
-
     lista: {
         paddingHorizontal: 20,
         gap: 14,
+    },
+    seccionHeader: {
+        marginTop: 8,
+        marginBottom: 2,
+    },
+    seccionTitulo: {
+        fontSize: 13,
+        fontFamily: Fonts.bold,
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+    },
+    otrosHeader: {
+        marginTop: 4,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 10,
+    },
+    filtroBtn: {
+        borderWidth: 1,
+        borderRadius: 10,
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+    },
+    filtroBtnText: {
+        fontSize: 11,
+        fontFamily: Fonts.semiBold,
+    },
+    sinActualCard: {
+        borderWidth: 1,
+        borderRadius: 14,
+        padding: 12,
+    },
+    sinActualText: {
+        fontSize: 12,
+        fontFamily: Fonts.regular,
+    },
+    estadoContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 40,
+        paddingHorizontal: 20,
+        gap: 8,
+    },
+    estadoEmoji: {
+        fontSize: 34,
+    },
+    estadoTitulo: {
+        fontSize: 16,
+        fontFamily: Fonts.bold,
+        textAlign: 'center',
+    },
+    estadoTexto: {
+        fontSize: 13,
+        fontFamily: Fonts.regular,
+        textAlign: 'center',
+    },
+    reintentarBtn: {
+        marginTop: 6,
+        backgroundColor: Universitario.rojo,
+        paddingHorizontal: 14,
+        paddingVertical: 8,
+        borderRadius: 10,
+    },
+    reintentarText: {
+        color: Universitario.crema,
+        fontSize: 12,
+        fontFamily: Fonts.bold,
     },
     card: {
         borderRadius: 18,
@@ -245,7 +427,6 @@ const styles = StyleSheet.create({
         borderColor: Universitario.rojo,
         borderWidth: 1.5,
     },
-
     cardLeft: {
         alignItems: 'center',
         gap: 6,
@@ -273,7 +454,6 @@ const styles = StyleSheet.create({
         color: Universitario.crema,
         letterSpacing: 0.5,
     },
-
     cardBody: {
         flex: 1,
         gap: 6,
@@ -295,7 +475,6 @@ const styles = StyleSheet.create({
         fontSize: 12,
         fontFamily: Fonts.regular,
     },
-
     periodosRow: {
         flexDirection: 'row',
         flexWrap: 'wrap',
@@ -310,42 +489,16 @@ const styles = StyleSheet.create({
         fontSize: 11,
         fontFamily: Fonts.semiBold,
     },
-
     descripcion: {
         fontSize: 13,
         fontFamily: Fonts.regular,
         lineHeight: 18,
     },
-
     titulosContainer: {
         gap: 6,
     },
     titulosLabel: {
         fontSize: 11,
         fontFamily: Fonts.semiBold,
-    },
-    titulosList: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: 6,
-    },
-    tituloPill: {
-        borderRadius: 8,
-        paddingHorizontal: 8,
-        paddingVertical: 3,
-    },
-    tituloPillText: {
-        fontSize: 11,
-        fontFamily: Fonts.semiBold,
-    },
-
-    cardFooter: {
-        borderTopWidth: 1,
-        paddingTop: 8,
-        marginTop: 2,
-    },
-    partidosText: {
-        fontSize: 11,
-        fontFamily: Fonts.regular,
     },
 });

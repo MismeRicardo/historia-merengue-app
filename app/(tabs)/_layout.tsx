@@ -86,7 +86,19 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="partidos"
+        options={{
+          tabBarItemStyle: { display: 'none' },
+        }}
+      />
+      <Tabs.Screen
         name="entrenadores"
+        options={{
+          tabBarItemStyle: { display: 'none' },
+        }}
+      />
+      <Tabs.Screen
+        name="trivias"
         options={{
           tabBarItemStyle: { display: 'none' },
         }}

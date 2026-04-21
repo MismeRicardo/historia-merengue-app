@@ -1,33 +1,30 @@
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { API_BASE_URL } from '@/constants/api';
 import { Colors, Fonts, Universitario } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Link } from 'expo-router';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const FUNDACION = 1924;
 const ANIO_ACTUAL = new Date().getFullYear();
 
-const ULTIMO_PARTIDO = {
-  local: { nombre: 'Universitario', abrev: 'U', goles: 2 },
-  visitante: { nombre: 'Alianza Lima', abrev: 'AL', goles: 1 },
-  competicion: 'Clausura',
-  jornada: 'Jornada 5 de 17',
-  fecha: '1 Mar 2026',
-  goleadores: [
-    { nombre: 'Álex Valera', minuto: '23\'', equipo: 'local' },
-    { nombre: 'Álex Valera', minuto: '61\'', equipo: 'local' },
-    { nombre: 'Hernán Barcos', minuto: '78\'', equipo: 'visitante' },
-  ],
+type Partido = {
+  id: number;
+  equipo_local: string;
+  equipo_visitante: string;
+  goles_local: number;
+  goles_visitante: number;
+  fecha: string;
+  competicion: string;
+  goleadores_local: string[];
+  goleadores_visitante: string[];
+  proximo_partido?: boolean | string | number | null;
 };
 
-const PROXIMO_PARTIDO = {
-  local: { nombre: 'Universitario', abrev: 'U' },
-  visitante: { nombre: 'Melgar', abrev: 'FBC' },
-  competicion: 'Clausura',
-  jornada: 'Jornada 6 de 17',
-  fecha: '8 Mar 2026',
-  hora: '15:30',
-  estadio: 'Estadio Monumental',
+type TemporadaPartidosApi = {
+  anio: number;
+  partidos: Partido[];
 };
 
 const secciones = [
@@ -37,9 +34,76 @@ const secciones = [
   { href: '/estadio', icono: 'mappin.and.ellipse' as const, titulo: 'Estadio', desc: 'El Monumental de Ate' },
 ];
 
+function formatFecha(valor: string): string {
+  if (!valor) return 'Fecha por confirmar';
+  const d = new Date(`${valor}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return valor;
+  return d.toLocaleDateString('es-PE', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
+function inicialesEquipo(nombre: string): string {
+  if (!nombre) return 'EQ';
+  const partes = nombre.split(' ').filter(Boolean);
+  if (partes.length === 1) return partes[0].slice(0, 2).toUpperCase();
+  return partes.slice(0, 3).map((p) => p[0]).join('').toUpperCase();
+}
+
+function esPartidoProximo(valor: unknown): boolean {
+  if (valor === true || valor === 1) return true;
+  if (typeof valor === 'string') {
+    const v = valor.trim().toLowerCase();
+    return v === 'true' || v === '1' || v === 't' || v === 'yes' || v === 'si';
+  }
+  return false;
+}
+
+function obtenerTimeStamp(fecha: string): number {
+  const t = new Date(`${fecha}T00:00:00`).getTime();
+  return Number.isNaN(t) ? 0 : t;
+}
+
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const [partidos, setPartidos] = useState<Partido[]>([]);
+  const [loadingPartidos, setLoadingPartidos] = useState(true);
+
+  useEffect(() => {
+    const cargarPartidos = async () => {
+      setLoadingPartidos(true);
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/partidos`);
+        if (!res.ok) throw new Error('No se pudo cargar partidos');
+        const data = (await res.json()) as TemporadaPartidosApi[];
+        const todos = data
+          .flatMap((t) => t.partidos ?? [])
+          .map((p) => ({ ...p, proximo_partido: esPartidoProximo(p.proximo_partido) }));
+        setPartidos(todos);
+      } catch {
+        setPartidos([]);
+      } finally {
+        setLoadingPartidos(false);
+      }
+    };
+
+    cargarPartidos();
+  }, []);
+
+  const ultimoPartido = useMemo(() => {
+    const jugados = partidos.filter((p) => !esPartidoProximo(p.proximo_partido));
+    if (jugados.length === 0) return null;
+    return [...jugados].sort((a, b) => obtenerTimeStamp(b.fecha) - obtenerTimeStamp(a.fecha))[0];
+  }, [partidos]);
+
+  const proximoPartido = useMemo(() => {
+    const proximos = partidos.filter((p) => esPartidoProximo(p.proximo_partido));
+    if (proximos.length === 0) return null;
+    return [...proximos].sort((a, b) => obtenerTimeStamp(a.fecha) - obtenerTimeStamp(b.fecha))[0];
+  }, [partidos]);
 
   return (
     <ScrollView
@@ -80,91 +144,119 @@ export default function HomeScreen() {
       {/* Partidos */}
       <Text style={[styles.seccionTitulo, { color: colors.text }]}>Partidos</Text>
 
-      {/* Último partido */}
-      <View style={[styles.partidoCard, { backgroundColor: Universitario.blanco }]}>
-        <Text style={[styles.partidoTag, { color: Universitario.grisMedio }]}>
-          {ULTIMO_PARTIDO.competicion} · {ULTIMO_PARTIDO.jornada}
-        </Text>
-        <View style={styles.partidoFila}>
-          {/* Local */}
-          <View style={styles.equipoBloque}>
-            <View style={[styles.escudoMini, { backgroundColor: Universitario.rojo }]}>
-              <Text style={styles.escudoMiniLetra}>{ULTIMO_PARTIDO.local.abrev}</Text>
-            </View>
-            <Text style={[styles.equipoNombre, { color: colors.text }]} numberOfLines={2}>
-              {ULTIMO_PARTIDO.local.nombre}
-            </Text>
-          </View>
-          {/* Marcador */}
-          <View style={styles.marcadorBloque}>
-            <Text style={[styles.marcador, { color: colors.text }]}>
-              {ULTIMO_PARTIDO.local.goles} - {ULTIMO_PARTIDO.visitante.goles}
-            </Text>
-            <Text style={[styles.partidoFecha, { color: Universitario.grisMedio }]}>{ULTIMO_PARTIDO.fecha}</Text>
-          </View>
-          {/* Visitante */}
-          <View style={styles.equipoBloque}>
-            <View style={[styles.escudoMini, { backgroundColor: Universitario.grisClaro }]}>
-              <Text style={[styles.escudoMiniLetra, { color: Universitario.negro }]}>{ULTIMO_PARTIDO.visitante.abrev}</Text>
-            </View>
-            <Text style={[styles.equipoNombre, { color: colors.text }]} numberOfLines={2}>
-              {ULTIMO_PARTIDO.visitante.nombre}
-            </Text>
-          </View>
+      {loadingPartidos ? (
+        <View style={[styles.partidoCard, { backgroundColor: Universitario.blanco, alignItems: 'center' }]}>
+          <ActivityIndicator size="small" color={Universitario.rojo} />
+          <Text style={[styles.goleadorItem, { color: Universitario.grisMedio, marginTop: 8 }]}>
+            Cargando partidos...
+          </Text>
         </View>
-        {/* Goleadores */}
-        <View style={[styles.goleadoresFila, { borderTopColor: Universitario.cremaOscuro }]}>
-          {/* Goles local */}
-          <View style={styles.goleadoresColumna}>
-            {ULTIMO_PARTIDO.goleadores.filter(g => g.equipo === 'local').map((g, i) => (
-              <Text key={i} style={[styles.goleadorItem, { color: Universitario.grisMedio, textAlign: 'left' }]}>
-                ⚽ {g.nombre} {g.minuto}
+      ) : (
+        <>
+          {/* Último partido */}
+          <View style={[styles.partidoCard, { backgroundColor: Universitario.blanco }]}>
+            <Text style={[styles.partidoTag, { color: Universitario.grisMedio }]}>
+              {ultimoPartido ? `${ultimoPartido.competicion || 'Partido oficial'} · Último jugado` : 'Último jugado'}
+            </Text>
+            {ultimoPartido ? (
+              <>
+                <View style={styles.partidoFila}>
+                  <View style={styles.equipoBloque}>
+                    <View style={[styles.escudoMini, { backgroundColor: Universitario.rojo }]}>
+                      <Text style={styles.escudoMiniLetra}>{inicialesEquipo(ultimoPartido.equipo_local)}</Text>
+                    </View>
+                    <Text style={[styles.equipoNombre, { color: colors.text }]} numberOfLines={2}>
+                      {ultimoPartido.equipo_local}
+                    </Text>
+                  </View>
+                  <View style={styles.marcadorBloque}>
+                    <Text style={[styles.marcador, { color: colors.text }]}>
+                      {ultimoPartido.goles_local} - {ultimoPartido.goles_visitante}
+                    </Text>
+                    <Text style={[styles.partidoFecha, { color: Universitario.grisMedio }]}>
+                      {formatFecha(ultimoPartido.fecha)}
+                    </Text>
+                  </View>
+                  <View style={styles.equipoBloque}>
+                    <View style={[styles.escudoMini, { backgroundColor: Universitario.grisClaro }]}>
+                      <Text style={[styles.escudoMiniLetra, { color: Universitario.negro }]}> 
+                        {inicialesEquipo(ultimoPartido.equipo_visitante)}
+                      </Text>
+                    </View>
+                    <Text style={[styles.equipoNombre, { color: colors.text }]} numberOfLines={2}>
+                      {ultimoPartido.equipo_visitante}
+                    </Text>
+                  </View>
+                </View>
+                <View style={[styles.goleadoresFila, { borderTopColor: Universitario.cremaOscuro }]}>
+                  <View style={styles.goleadoresColumna}>
+                    {(ultimoPartido.goleadores_local ?? []).slice(0, 3).map((g, i) => (
+                      <Text key={`local-${i}`} style={[styles.goleadorItem, { color: Universitario.grisMedio, textAlign: 'left' }]}>
+                        ⚽ {g}
+                      </Text>
+                    ))}
+                  </View>
+                  <View style={styles.goleadoresColumna}>
+                    {(ultimoPartido.goleadores_visitante ?? []).slice(0, 3).map((g, i) => (
+                      <Text key={`visitante-${i}`} style={[styles.goleadorItem, { color: Universitario.grisMedio, textAlign: 'right' }]}>
+                        {g} ⚽
+                      </Text>
+                    ))}
+                  </View>
+                </View>
+              </>
+            ) : (
+              <Text style={[styles.goleadorItem, { color: Universitario.grisMedio, textAlign: 'center' }]}>
+                No hay partidos jugados para mostrar.
               </Text>
-            ))}
+            )}
           </View>
-          {/* Goles visitante */}
-          <View style={styles.goleadoresColumna}>
-            {ULTIMO_PARTIDO.goleadores.filter(g => g.equipo === 'visitante').map((g, i) => (
-              <Text key={i} style={[styles.goleadorItem, { color: Universitario.grisMedio, textAlign: 'right' }]}>
-                {g.nombre} {g.minuto} ⚽
-              </Text>
-            ))}
-          </View>
-        </View>
-      </View>
 
-      {/* Próximo partido */}
-      <View style={[styles.partidoCard, { backgroundColor: Universitario.blanco }]}>
-        <Text style={[styles.partidoTag, { color: Universitario.grisMedio }]}>
-          {PROXIMO_PARTIDO.competicion} · {PROXIMO_PARTIDO.jornada}
-        </Text>
-        <View style={styles.partidoFila}>
-          <View style={styles.equipoBloque}>
-            <View style={[styles.escudoMini, { backgroundColor: Universitario.rojo }]}>
-              <Text style={styles.escudoMiniLetra}>{PROXIMO_PARTIDO.local.abrev}</Text>
-            </View>
-            <Text style={[styles.equipoNombre, { color: colors.text }]} numberOfLines={2}>
-              {PROXIMO_PARTIDO.local.nombre}
+          {/* Próximo partido */}
+          <View style={[styles.partidoCard, { backgroundColor: Universitario.blanco }]}>
+            <Text style={[styles.partidoTag, { color: Universitario.grisMedio }]}> 
+              {proximoPartido ? `${proximoPartido.competicion || 'Partido oficial'} · Próximo partido` : 'Próximo partido'}
             </Text>
+            {proximoPartido ? (
+              <>
+                <View style={styles.partidoFila}>
+                  <View style={styles.equipoBloque}>
+                    <View style={[styles.escudoMini, { backgroundColor: Universitario.rojo }]}>
+                      <Text style={styles.escudoMiniLetra}>{inicialesEquipo(proximoPartido.equipo_local)}</Text>
+                    </View>
+                    <Text style={[styles.equipoNombre, { color: colors.text }]} numberOfLines={2}>
+                      {proximoPartido.equipo_local}
+                    </Text>
+                  </View>
+                  <View style={styles.marcadorBloque}>
+                    <Text style={[styles.marcadorVs, { color: Universitario.grisMedio }]}>VS</Text>
+                    <Text style={[styles.partidoFecha, { color: Universitario.grisMedio }]}>
+                      {formatFecha(proximoPartido.fecha)}
+                    </Text>
+                  </View>
+                  <View style={styles.equipoBloque}>
+                    <View style={[styles.escudoMini, { backgroundColor: Universitario.grisClaro }]}>
+                      <Text style={[styles.escudoMiniLetra, { color: Universitario.negro }]}> 
+                        {inicialesEquipo(proximoPartido.equipo_visitante)}
+                      </Text>
+                    </View>
+                    <Text style={[styles.equipoNombre, { color: colors.text }]} numberOfLines={2}>
+                      {proximoPartido.equipo_visitante}
+                    </Text>
+                  </View>
+                </View>
+                <View style={[styles.goleadoresFila, { borderTopColor: Universitario.cremaOscuro }]}>
+                  <Text style={[styles.goleadorItem, { color: Universitario.grisMedio }]}>Pendiente por jugar</Text>
+                </View>
+              </>
+            ) : (
+              <Text style={[styles.goleadorItem, { color: Universitario.grisMedio, textAlign: 'center' }]}>
+                No hay próximo partido marcado.
+              </Text>
+            )}
           </View>
-          <View style={styles.marcadorBloque}>
-            <Text style={[styles.marcadorVs, { color: Universitario.grisMedio }]}>VS</Text>
-            <Text style={[styles.partidoHora, { color: Universitario.rojo }]}>{PROXIMO_PARTIDO.hora}</Text>
-            <Text style={[styles.partidoFecha, { color: Universitario.grisMedio }]}>{PROXIMO_PARTIDO.fecha}</Text>
-          </View>
-          <View style={styles.equipoBloque}>
-            <View style={[styles.escudoMini, { backgroundColor: Universitario.grisClaro }]}>
-              <Text style={[styles.escudoMiniLetra, { color: Universitario.negro }]}>{PROXIMO_PARTIDO.visitante.abrev}</Text>
-            </View>
-            <Text style={[styles.equipoNombre, { color: colors.text }]} numberOfLines={2}>
-              {PROXIMO_PARTIDO.visitante.nombre}
-            </Text>
-          </View>
-        </View>
-        <View style={[styles.goleadoresFila, { borderTopColor: Universitario.cremaOscuro }]}>
-          <Text style={[styles.goleadorItem, { color: Universitario.grisMedio }]}>🏟️ {PROXIMO_PARTIDO.estadio}</Text>
-        </View>
-      </View>
+        </>
+      )}
 
       {/* Menú de secciones */}
       <Text style={[styles.seccionTitulo, { color: colors.text }]}>Explorar</Text>

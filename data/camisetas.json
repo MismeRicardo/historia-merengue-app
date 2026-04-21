@@ -1,106 +1,163 @@
 [
   {
+    "id": 0,
     "anio": 2024,
     "proveedor": "Umbro",
     "colores": ["Blanco", "Rojo"],
     "descripcion": "Camiseta titular con franjas diagonales rojas sobre fondo blanco. Cuello redondo con detalle rojo.",
-    "tipo": "titular",
-    "imagen": "https://picsum.photos/seed/camiseta2024/400/300"
+    "tipo": "Titular",
+    "principal": "https://picsum.photos/seed/cam2024a/400/500",
+    "imagenes": [
+      "https://picsum.photos/seed/cam2024a/400/500",
+      "https://picsum.photos/seed/cam2024b/400/500",
+      "https://picsum.photos/seed/cam2024c/400/500"
+    ]
   },
   {
+    "id": 1,
     "anio": 2024,
     "proveedor": "Umbro",
     "colores": ["Rojo", "Blanco"],
     "descripcion": "Camiseta alternativa completamente roja con detalles blancos en cuello y mangas.",
-    "tipo": "alternativa",
-    "imagen": null
+    "tipo": "Alternativa",
+    "principal": "https://picsum.photos/seed/cam2024alt_a/400/500",
+    "imagenes": [
+      "https://picsum.photos/seed/cam2024alt_a/400/500",
+      "https://picsum.photos/seed/cam2024alt_b/400/500"
+    ]
   },
   {
+    "id": 2,
     "anio": 2023,
     "proveedor": "Umbro",
     "colores": ["Blanco", "Rojo"],
     "descripcion": "Diseño clásico con rayas verticales finas. Celebración del centenario del club.",
-    "tipo": "titular",
-    "imagen": null
+    "tipo": "Titular Centenario",
+    "principal": "https://picsum.photos/seed/cam2023a/400/500",
+    "imagenes": [
+      "https://picsum.photos/seed/cam2023a/400/500",
+      "https://picsum.photos/seed/cam2023b/400/500"
+    ]
   },
   {
+    "id": 3,
     "anio": 2022,
     "proveedor": "Umbro",
     "colores": ["Blanco", "Rojo"],
     "descripcion": "Franjas anchas diagonales rojas y blancas. Cuello tipo polo.",
-    "tipo": "titular",
-    "imagen": null
+    "tipo": "Titular",
+    "principal": "https://picsum.photos/seed/cam2022a/400/500",
+    "imagenes": [
+      "https://picsum.photos/seed/cam2022a/400/500",
+      "https://picsum.photos/seed/cam2022b/400/500"
+    ]
   },
   {
+    "id": 4,
     "anio": 2022,
     "proveedor": "Umbro",
     "colores": ["Negro", "Rojo"],
     "descripcion": "Alternativa negra con líneas rojas en costados y escudo bordado en dorado.",
-    "tipo": "alternativa",
-    "imagen": null
+    "tipo": "Alternativa",
+    "principal": "https://picsum.photos/seed/cam2022alt_a/400/500",
+    "imagenes": [
+      "https://picsum.photos/seed/cam2022alt_a/400/500",
+      "https://picsum.photos/seed/cam2022alt_b/400/500"
+    ]
   },
   {
+    "id": 5,
     "anio": 2020,
     "proveedor": "Umbro",
     "colores": ["Blanco", "Rojo"],
     "descripcion": "Diseño minimalista con una sola diagonal roja ancha sobre fondo blanco.",
-    "tipo": "titular",
-    "imagen": null
+    "tipo": "Titular",
+    "principal": "https://picsum.photos/seed/cam2020a/400/500",
+    "imagenes": [
+      "https://picsum.photos/seed/cam2020a/400/500",
+      "https://picsum.photos/seed/cam2020b/400/500"
+    ]
   },
   {
+    "id": 6,
     "anio": 2018,
     "proveedor": "Umbro",
     "colores": ["Blanco", "Rojo"],
     "descripcion": "Franjas clásicas crema y rojo con escudo tradicional bordado.",
-    "tipo": "titular",
-    "imagen": null
+    "tipo": "Titular",
+    "principal": "https://picsum.photos/seed/cam2018a/400/500",
+    "imagenes": [
+      "https://picsum.photos/seed/cam2018a/400/500",
+      "https://picsum.photos/seed/cam2018b/400/500"
+    ]
   },
   {
+    "id": 7,
     "anio": 2015,
     "proveedor": "Umbro",
     "colores": ["Blanco", "Rojo"],
     "descripcion": "Diseño con textura en el tejido. Rayas verticales rojas y blancas.",
-    "tipo": "titular",
-    "imagen": null
+    "tipo": "Titular",
+    "principal": "https://picsum.photos/seed/cam2015a/400/500",
+    "imagenes": [
+      "https://picsum.photos/seed/cam2015a/400/500",
+      "https://picsum.photos/seed/cam2015b/400/500"
+    ]
   },
   {
+    "id": 8,
     "anio": 2013,
     "proveedor": "Umbro",
     "colores": ["Blanco", "Rojo"],
     "descripcion": "Camiseta de la temporada campeona. Rayas diagonales con cuello en V.",
-    "tipo": "titular",
-    "imagen": null
+    "tipo": "Titular",
+    "principal": "https://picsum.photos/seed/cam2013a/400/500",
+    "imagenes": [
+      "https://picsum.photos/seed/cam2013a/400/500",
+      "https://picsum.photos/seed/cam2013b/400/500"
+    ]
   },
   {
+    "id": 9,
     "anio": 2009,
     "proveedor": "Umbro",
     "colores": ["Blanco", "Rojo"],
     "descripcion": "Clásica con franjas anchas. Una de las más recordadas por los hinchas.",
-    "tipo": "titular",
-    "imagen": null
+    "tipo": "Titular",
+    "principal": "https://picsum.photos/seed/cam2009a/400/500",
+    "imagenes": [
+      "https://picsum.photos/seed/cam2009a/400/500",
+      "https://picsum.photos/seed/cam2009b/400/500"
+    ]
   },
   {
+    "id": 10,
     "anio": 2000,
     "proveedor": "Penalty",
     "colores": ["Blanco", "Rojo"],
     "descripcion": "Diseño del cambio de milenio, cuello redondo, franjas clásicas.",
-    "tipo": "titular",
-    "imagen": null
+    "tipo": "Titular",
+    "principal": "https://picsum.photos/seed/cam2000a/400/500",
+    "imagenes": ["https://picsum.photos/seed/cam2000a/400/500"]
   },
   {
+    "id": 11,
     "anio": 1992,
     "proveedor": "Adidas",
     "colores": ["Blanco", "Rojo"],
     "descripcion": "Primera camiseta con patrocinio Adidas. Tres rayas en los hombros.",
-    "tipo": "titular",
-    "imagen": null
+    "tipo": "Titular",
+    "principal": "https://picsum.photos/seed/cam1992a/400/500",
+    "imagenes": ["https://picsum.photos/seed/cam1992a/400/500"]
   },
   {
+    "id": 12,
     "anio": 1985,
     "proveedor": "Sin proveedor",
     "colores": ["Blanco", "Rojo"],
     "descripcion": "Diseño de la era dorada del club. Cuello redondo, sin patrocinador.",
-    "tipo": "titular",
-    "imagen": null
+    "tipo": "Titular",
+    "principal": null,
+    "imagenes": []
   }
 ]

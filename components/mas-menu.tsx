@@ -17,7 +17,7 @@ type BadgeType = { label: string; color: string };
 type MenuItem = {
     label: string;
     href: string;
-    icono: 'clock.fill' | 'person.3.fill' | 'star.fill' | 'info.circle.fill' | 'sportscourt.fill' | 'calendar' | 'magnifyingglass' | 'person.fill';
+    icono: 'clock.fill' | 'person.3.fill' | 'star.fill' | 'info.circle.fill' | 'sportscourt.fill' | 'calendar' | 'magnifyingglass' | 'person.fill' | 'questionmark.circle.fill';
     badge?: BadgeType;
 };
 
@@ -38,6 +38,11 @@ const MENU_ITEMS: MenuItem[] = [
         icono: 'sportscourt.fill',
     },
     {
+        label: 'Partidos',
+        href: '/(tabs)/partidos',
+        icono: 'calendar',
+    },
+    {
         label: 'Camisetas',
         href: '/(tabs)/camisetas',
         icono: 'star.fill',
@@ -46,6 +51,11 @@ const MENU_ITEMS: MenuItem[] = [
         label: 'Entrenadores',
         href: '/(tabs)/entrenadores',
         icono: 'person.fill',
+    },
+    {
+        label: 'Trivias',
+        href: '/(tabs)/trivias',
+        icono: 'questionmark.circle.fill',
     },
 ];
 
