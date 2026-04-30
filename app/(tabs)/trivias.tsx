@@ -1,77 +1,115 @@
+import { API_BASE_URL } from '@/constants/api';
 import { Colors, Fonts, Universitario } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
+type TriviaRespuestaApi = {
+    texto: string;
+    correcta: boolean;
+};
+
+type TriviaApi = {
+    id: number;
+    pregunta: string;
+    tema: string;
+    imagen: string | null;
+    respuestas: TriviaRespuestaApi[];
+    created_at: string;
+};
 
 type Trivia = {
     id: number;
     pregunta: string;
+    tema: string;
+    imagen: string | null;
     opciones: string[];
     respuestaCorrecta: number;
-    explicacion: string;
 };
-
-const TRIVIAS: Trivia[] = [
-    {
-        id: 1,
-        pregunta: 'En que anio se fundo Universitario de Deportes?',
-        opciones: ['1911', '1924', '1930', '1942'],
-        respuestaCorrecta: 1,
-        explicacion: 'La U fue fundada el 7 de agosto de 1924 en Lima.',
-    },
-    {
-        id: 2,
-        pregunta: 'Como se llama el estadio principal de Universitario?',
-        opciones: ['Nacional', 'Alejandro Villanueva', 'Monumental', 'San Marcos'],
-        respuestaCorrecta: 2,
-        explicacion: 'El Estadio Monumental es la casa principal de la U.',
-    },
-    {
-        id: 3,
-        pregunta: 'Que color identifica historicamente la camiseta de la U?',
-        opciones: ['Azul', 'Rojo', 'Crema', 'Verde'],
-        respuestaCorrecta: 2,
-        explicacion: 'El color crema es parte central de la identidad del club.',
-    },
-    {
-        id: 4,
-        pregunta: 'Cual es el apodo historico del club?',
-        opciones: ['Blanquiazules', 'Rojinegros', 'Merengues', 'Celestes'],
-        respuestaCorrecta: 2,
-        explicacion: 'Universitario es conocido popularmente como los Merengues.',
-    },
-    {
-        id: 5,
-        pregunta: 'Quien es uno de los maximos idolos goleadores de la U?',
-        opciones: ['Teodoro Lolo Fernandez', 'Cesar Cueto', 'Claudio Pizarro', 'Nolberto Solano'],
-        respuestaCorrecta: 0,
-        explicacion: 'Lolo Fernandez es una leyenda absoluta del club.',
-    },
-];
 
 export default function TriviasScreen() {
     const colorScheme = useColorScheme();
     const colors = Colors[colorScheme ?? 'light'];
 
+    const [preguntas, setPreguntas] = useState<Trivia[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const [indiceActual, setIndiceActual] = useState(0);
     const [opcionSeleccionada, setOpcionSeleccionada] = useState<number | null>(null);
     const [puntaje, setPuntaje] = useState(0);
     const [finalizado, setFinalizado] = useState(false);
 
-    const triviaActual = TRIVIAS[indiceActual];
-    const total = TRIVIAS.length;
-    const progreso = useMemo(() => ((indiceActual + 1) / total) * 100, [indiceActual, total]);
+    useEffect(() => {
+        let activo = true;
+
+        const cargarPreguntas = async () => {
+            setLoading(true);
+            setError('');
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/trivia`);
+                if (!res.ok) {
+                    throw new Error('No se pudieron cargar las preguntas');
+                }
+
+                const data = (await res.json()) as TriviaApi[];
+                const normalizadas = Array.isArray(data)
+                    ? data
+                        .map((pregunta) => {
+                            const respuestas = Array.isArray(pregunta.respuestas) ? pregunta.respuestas : [];
+                            const respuestaCorrecta = respuestas.findIndex((respuesta) => respuesta.correcta);
+
+                            return {
+                                id: pregunta.id,
+                                pregunta: pregunta.pregunta,
+                                tema: pregunta.tema,
+                                imagen: pregunta.imagen,
+                                opciones: respuestas.map((respuesta) => respuesta.texto),
+                                respuestaCorrecta,
+                            };
+                        })
+                        .filter((pregunta) => pregunta.opciones.length >= 2 && pregunta.respuestaCorrecta >= 0)
+                    : [];
+
+                if (activo) {
+                    setPreguntas(normalizadas);
+                }
+            } catch {
+                if (activo) {
+                    setError('No se pudieron cargar las preguntas de trivia');
+                }
+            } finally {
+                if (activo) {
+                    setLoading(false);
+                }
+            }
+        };
+
+        void cargarPreguntas();
+
+        return () => {
+            activo = false;
+        };
+    }, []);
+
+    const triviaActual = preguntas[indiceActual];
+    const total = preguntas.length;
+    const progreso = useMemo(
+        () => (total === 0 ? 0 : ((indiceActual + 1) / total) * 100),
+        [indiceActual, total]
+    );
 
     const seleccionarOpcion = (index: number) => {
-        if (opcionSeleccionada !== null || finalizado) return;
+        if (opcionSeleccionada !== null || finalizado || !triviaActual) return;
         setOpcionSeleccionada(index);
+
         if (index === triviaActual.respuestaCorrecta) {
             setPuntaje((prev) => prev + 1);
         }
     };
 
     const siguiente = () => {
-        if (opcionSeleccionada === null) return;
+        if (opcionSeleccionada === null || !triviaActual) return;
 
         const ultimo = indiceActual === total - 1;
         if (ultimo) {
@@ -90,9 +128,36 @@ export default function TriviasScreen() {
         setFinalizado(false);
     };
 
+    if (loading) {
+        return (
+            <View style={[styles.estadoContainer, { backgroundColor: colors.background }]}>
+                <ActivityIndicator size="large" color={Universitario.rojo} />
+                <Text style={[styles.estadoTexto, { color: colors.icon }]}>Cargando trivias...</Text>
+            </View>
+        );
+    }
+
+    if (error) {
+        return (
+            <View style={[styles.estadoContainer, { backgroundColor: colors.background }]}>
+                <Text style={[styles.estadoTitulo, { color: colors.text }]}>Trivia</Text>
+                <Text style={[styles.estadoTexto, { color: colors.icon, textAlign: 'center' }]}>{error}</Text>
+            </View>
+        );
+    }
+
+    if (total === 0) {
+        return (
+            <View style={[styles.estadoContainer, { backgroundColor: colors.background }]}>
+                <Text style={[styles.estadoTitulo, { color: colors.text }]}>Trivia</Text>
+                <Text style={[styles.estadoTexto, { color: colors.icon, textAlign: 'center' }]}>No hay preguntas cargadas todavía.</Text>
+            </View>
+        );
+    }
+
     if (finalizado) {
         return (
-            <View style={[styles.container, { backgroundColor: colors.background }]}> 
+            <View style={[styles.container, { backgroundColor: colors.background }]}>
                 <View style={[styles.resultadoCard, { backgroundColor: Universitario.blanco }]}>
                     <Text style={styles.resultadoEmoji}>🏆</Text>
                     <Text style={[styles.resultadoTitulo, { color: colors.text }]}>Trivia completada</Text>
@@ -120,12 +185,12 @@ export default function TriviasScreen() {
             style={[styles.container, { backgroundColor: colors.background }]}
             contentContainerStyle={styles.content}
         >
-            <View style={[styles.header, { backgroundColor: Universitario.rojo }]}> 
+            <View style={[styles.header, { backgroundColor: Universitario.rojo }]}>
                 <Text style={styles.headerTitulo}>Trivias</Text>
                 <Text style={styles.headerSubtitulo}>Preguntas y respuestas sobre la U</Text>
             </View>
 
-            <View style={[styles.progresoCard, { backgroundColor: Universitario.blanco }]}> 
+            <View style={[styles.progresoCard, { backgroundColor: Universitario.blanco }]}>
                 <View style={styles.progresoRow}>
                     <Text style={[styles.progresoLabel, { color: colors.text }]}>Pregunta {indiceActual + 1} de {total}</Text>
                     <Text style={[styles.progresoLabel, { color: Universitario.rojo }]}>Puntaje: {puntaje}</Text>
@@ -135,7 +200,21 @@ export default function TriviasScreen() {
                 </View>
             </View>
 
-            <View style={[styles.triviaCard, { backgroundColor: Universitario.blanco }]}> 
+            <View style={[styles.triviaCard, { backgroundColor: Universitario.blanco }]}>
+                {triviaActual.imagen && (
+                    <View style={styles.imagenWrap}>
+                        <Image
+                            source={{ uri: triviaActual.imagen }}
+                            style={styles.imagen}
+                            resizeMode="cover"
+                        />
+                    </View>
+                )}
+
+                <View style={styles.temaPill}>
+                    <Text style={styles.temaPillText}>{triviaActual.tema}</Text>
+                </View>
+
                 <Text style={[styles.pregunta, { color: colors.text }]}>{triviaActual.pregunta}</Text>
 
                 <View style={styles.opcionesWrap}>
@@ -172,13 +251,6 @@ export default function TriviasScreen() {
                     })}
                 </View>
 
-                {opcionSeleccionada !== null && (
-                    <View style={[styles.explicacionBox, { borderColor: colors.border }]}> 
-                        <Text style={[styles.explicacionTitulo, { color: colors.text }]}>Respuesta:</Text>
-                        <Text style={[styles.explicacionTexto, { color: Universitario.grisMedio }]}>{triviaActual.explicacion}</Text>
-                    </View>
-                )}
-
                 <TouchableOpacity
                     style={[styles.accionBtn, opcionSeleccionada === null && styles.accionBtnDisabled]}
                     onPress={siguiente}
@@ -197,6 +269,21 @@ export default function TriviasScreen() {
 const styles = StyleSheet.create({
     container: { flex: 1 },
     content: { paddingBottom: 32 },
+    estadoContainer: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 24,
+    },
+    estadoTitulo: {
+        fontSize: 22,
+        fontFamily: Fonts.black,
+        marginBottom: 8,
+    },
+    estadoTexto: {
+        fontSize: 14,
+        fontFamily: Fonts.medium,
+    },
     header: {
         paddingTop: 56,
         paddingBottom: 24,
@@ -253,6 +340,31 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.06,
         shadowRadius: 6,
         elevation: 2,
+    },
+    imagenWrap: {
+        borderRadius: 14,
+        overflow: 'hidden',
+        marginBottom: 12,
+        backgroundColor: '#F6F2E8',
+    },
+    imagen: {
+        width: '100%',
+        height: 180,
+    },
+    temaPill: {
+        alignSelf: 'flex-start',
+        backgroundColor: '#F4E7D0',
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        borderRadius: 999,
+        marginBottom: 10,
+    },
+    temaPillText: {
+        fontSize: 11,
+        fontFamily: Fonts.semiBold,
+        color: Universitario.rojo,
+        textTransform: 'uppercase',
+        letterSpacing: 0.6,
     },
     pregunta: {
         fontSize: 18,
